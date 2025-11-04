@@ -226,6 +226,7 @@ class RedTrackAPI {
 
   /**
    * Get active campaigns with metrics (grouped by source/sub20)
+   * Sorted by link generation history (most recent first)
    */
   async getActiveCampaigns(dateRange: DateRange): Promise<Array<{
     source: string;
@@ -237,9 +238,33 @@ class RedTrackAPI {
     spend: number;
     roi: number;
   }>> {
+    // Get aggregated metrics per source
     const reports = await this.getReports(dateRange, ["sub20"]);
 
-    return reports.map((r) => {
+    // Get link history from localStorage to determine source creation order
+    const linkHistory = JSON.parse(localStorage.getItem("link-history") || "[]");
+
+    // Build map of source -> first appearance timestamp (from link generator)
+    const sourceFirstSeen = new Map<string, number>();
+    linkHistory.forEach((item: any) => {
+      if (!item.account || !item.offer) return;
+
+      // Reconstruct source from offer + account (e.g., "Apple Pay" + "1639" -> "apple1639")
+      const offerKey = Object.entries(config.offers).find(([_, v]) =>
+        (v as any).name === item.offer
+      )?.[0];
+      if (!offerKey) return;
+
+      const offerCode = config.offerCodes[offerKey as keyof typeof config.offerCodes];
+      const source = `${item.account}${offerCode}`.toLowerCase();
+
+      const timestamp = new Date(item.timestamp).getTime();
+      if (!sourceFirstSeen.has(source) || timestamp < sourceFirstSeen.get(source)!) {
+        sourceFirstSeen.set(source, timestamp);
+      }
+    });
+
+    const campaigns = reports.map((r) => {
       const source = r.sub20 || "unknown";
 
       // Extract offer from sub20 (e.g., "apple3527" -> "apple", "cashapp1639" -> "cashapp")
@@ -286,8 +311,21 @@ class RedTrackAPI {
         revenue: r.revenue,
         spend,
         roi,
+        firstSeen: sourceFirstSeen.get(sourceLower) || 0, // For sorting
       };
     }).filter(c => c.clicks > 0); // Only show sources with traffic
+
+    // Sort by first appearance in link generator (most recent first)
+    // If no history, sort alphabetically (reverse)
+    campaigns.sort((a, b) => {
+      if (a.firstSeen === 0 && b.firstSeen === 0) {
+        return b.source.localeCompare(a.source); // Reverse alphabetical
+      }
+      return b.firstSeen - a.firstSeen; // Most recent first
+    });
+
+    // Remove firstSeen from return value
+    return campaigns.map(({ firstSeen, ...rest }) => rest);
   }
 }
 
