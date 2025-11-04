@@ -3,7 +3,7 @@ export const config = {
   tracker: {
     redtrack: {
       domain: "rgbad.ttrk.io",
-      apiKey: "Q7xN6gPfPftYvo1YcEXw",
+      apiKey: "nCrQE1kOLkDCJIv3ICRc",
       campaigns: {
         apple: "68f263c889a41cac70e5e7b7",
         cashapp: "68f7bc0c2d2b6680994d5388",

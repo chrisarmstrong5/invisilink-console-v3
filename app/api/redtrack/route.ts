@@ -2,33 +2,29 @@ import { NextResponse } from "next/server";
 import { config } from "@/lib/config";
 
 const API_KEY = config.tracker.redtrack.apiKey;
-const BASE_URL = "https://api.redtrack.io/v1";
+const BASE_URL = "https://api.redtrack.io";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const endpoint = searchParams.get("endpoint") || "/campaigns";
-  const from = searchParams.get("from");
-  const to = searchParams.get("to");
-  const groupBy = searchParams.get("groupBy");
 
   try {
-    let url = `${BASE_URL}${endpoint}`;
+    // Build URL with all parameters from the request
+    const params = new URLSearchParams();
+    params.set("api_key", API_KEY); // API key must be in query params
 
-    // Add query parameters for reports
-    if (from && to && groupBy) {
-      const params = new URLSearchParams({
-        from,
-        to,
-        groupBy,
-      });
-      url += `?${params.toString()}`;
-    }
+    // Pass through all other parameters from the client
+    searchParams.forEach((value, key) => {
+      if (key !== "endpoint") {
+        params.set(key, value);
+      }
+    });
 
-    console.log("[RedTrack API] Fetching:", url);
+    const url = `${BASE_URL}${endpoint}?${params.toString()}`;
+    console.log("[RedTrack API] Fetching:", url.replace(API_KEY, "***"));
 
     const response = await fetch(url, {
       headers: {
-        Authorization: `Bearer ${API_KEY}`,
         "Content-Type": "application/json",
         Accept: "application/json",
       },

@@ -38,13 +38,14 @@ class RedTrackAPI {
 
   constructor() {
     this.apiKey = config.tracker.redtrack.apiKey;
-    this.baseUrl = "https://api.redtrack.io/v1";
+    this.baseUrl = "https://api.redtrack.io";
   }
 
   private async request<T>(endpoint: string, params?: Record<string, string>): Promise<T> {
     // Use Next.js API route proxy to avoid CORS issues
     const searchParams = new URLSearchParams({
       endpoint,
+      api_key: this.apiKey,
       ...params,
     });
 
@@ -73,16 +74,16 @@ class RedTrackAPI {
    * Get campaign reports with optional filtering
    *
    * @param dateRange - From/to dates
-   * @param groupBy - Group results by: 'source', 'sub1', 'campaign', etc.
+   * @param groupBy - Group results by: 'source', 'sub1', 'campaign', 'date', etc.
    */
   async getReports(
     dateRange: DateRange,
     groupBy: string[] = ["campaign"]
   ): Promise<RedTrackMetrics[]> {
-    const data = await this.request<any>("/reports/campaigns", {
-      from: dateRange.from,
-      to: dateRange.to,
-      groupBy: groupBy.join(","),
+    const data = await this.request<any>("/report", {
+      date_from: dateRange.from,
+      date_to: dateRange.to,
+      group: groupBy.join(","),
     });
 
     // Transform API response to our metrics format
