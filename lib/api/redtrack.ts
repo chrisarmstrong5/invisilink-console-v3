@@ -15,6 +15,7 @@ export interface DateRange {
 export interface RedTrackMetrics {
   source?: string; // e.g., "1639AP"
   sub1?: string; // Spark code ID
+  sub20?: string; // Source parameter (s= in URL, e.g., "apple3527")
   campaign?: string; // Campaign ID
   clicks: number;
   conversions: number;
@@ -90,6 +91,7 @@ class RedTrackAPI {
     return (data.data || data || []).map((row: any) => ({
       source: row.source || row.s,
       sub1: row.sub1,
+      sub20: row.sub20,
       campaign: row.campaign_id || row.campaign,
       clicks: parseInt(row.clicks) || 0,
       conversions: parseInt(row.conversions) || 0,
@@ -223,10 +225,10 @@ class RedTrackAPI {
   }
 
   /**
-   * Get active campaigns with metrics
+   * Get active campaigns with metrics (grouped by source/sub20)
    */
   async getActiveCampaigns(dateRange: DateRange): Promise<Array<{
-    campaign: string;
+    source: string;
     offer: string;
     epc: number;
     clicks: number;
@@ -235,34 +237,57 @@ class RedTrackAPI {
     spend: number;
     roi: number;
   }>> {
-    const reports = await this.getReports(dateRange, ["campaign"]);
+    const reports = await this.getReports(dateRange, ["sub20"]);
 
     return reports.map((r) => {
-      // Find offer name from campaign ID
-      const offerEntry = Object.entries(config.tracker.redtrack.campaigns).find(
-        ([_, id]) => id === r.campaign
-      );
-      const offerKey = offerEntry?.[0] || "unknown";
-      const offerName = config.offers[offerKey as keyof typeof config.offers]?.name || offerKey;
+      const source = r.sub20 || "unknown";
 
-      // Get stored spend from localStorage
-      const spendKey = `campaign-spend-${r.campaign}`;
+      // Extract offer from sub20 (e.g., "apple3527" -> "apple", "cashapp1639" -> "cashapp")
+      let offerKey = "unknown";
+      const sourceLower = source.toLowerCase();
+
+      // Check against known offer prefixes
+      if (sourceLower.startsWith("apple")) offerKey = "apple";
+      else if (sourceLower.startsWith("cashapp")) offerKey = "cashapp";
+      else if (sourceLower.startsWith("shein")) offerKey = "shein";
+      else if (sourceLower.startsWith("venmo")) offerKey = "venmo";
+      else if (sourceLower.startsWith("freecash")) {
+        // Determine freecash variant
+        if (sourceLower.includes("video")) offerKey = "freecash-videos";
+        else if (sourceLower.includes("ad")) offerKey = "freecash-ads";
+        else if (sourceLower.includes("game")) offerKey = "freecash-games";
+        else if (sourceLower.includes("survey")) offerKey = "freecash-surveys";
+        else if (sourceLower.includes("paypal")) offerKey = "freecash-paypal";
+        else offerKey = "freecash-main";
+      }
+      else if (sourceLower.startsWith("swift")) {
+        if (sourceLower.includes("venmo")) offerKey = "swift-venmo";
+        else if (sourceLower.includes("amazon")) offerKey = "swift-amazon";
+      }
+
+      const offerName = config.offers[offerKey as keyof typeof config.offers]?.name || source;
+
+      // Get stored spend from localStorage (keyed by source)
+      const spendKey = `source-spend-${source}`;
       const spend = parseFloat(localStorage.getItem(spendKey) || "0");
+
+      // Calculate EPC based on clicks (not lander views like RedTrack does)
+      const epc = r.clicks > 0 ? r.revenue / r.clicks : 0;
 
       // Calculate ROI with manual spend
       const roi = spend > 0 ? ((r.revenue - spend) / spend) * 100 : 0;
 
       return {
-        campaign: r.campaign || "",
+        source,
         offer: offerName,
-        epc: r.epc,
+        epc,
         clicks: r.clicks,
         cvr: r.cvr,
         revenue: r.revenue,
         spend,
         roi,
       };
-    }).filter(c => c.clicks > 0); // Only show campaigns with traffic
+    }).filter(c => c.clicks > 0); // Only show sources with traffic
   }
 }
 

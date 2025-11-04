@@ -31,7 +31,7 @@ interface DailyStats {
 }
 
 interface CampaignRow {
-  campaign: string;
+  source: string;
   offer: string;
   epc: number;
   clicks: number;
@@ -75,7 +75,7 @@ export default function DashboardPage() {
       // Initialize spend inputs
       const spendMap: Record<string, string> = {};
       activeCampaigns.forEach((c) => {
-        spendMap[c.campaign] = c.spend.toString();
+        spendMap[c.source] = c.spend.toString();
       });
       setSpendInputs(spendMap);
     } catch (error: any) {
@@ -97,9 +97,9 @@ export default function DashboardPage() {
   }
 
   // Save spend to localStorage
-  function saveSpend(campaign: string, value: string) {
+  function saveSpend(source: string, value: string) {
     const spend = parseFloat(value) || 0;
-    localStorage.setItem(`campaign-spend-${campaign}`, spend.toString());
+    localStorage.setItem(`source-spend-${source}`, spend.toString());
     setEditingSpend(null);
     loadDashboardData(); // Refresh to recalculate ROI
   }
@@ -277,7 +277,7 @@ export default function DashboardPage() {
           <table className="w-full">
             <thead className="border-b bg-secondary/50">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-foreground">Campaign</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-foreground">Source</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-foreground">Offer</th>
                 <th className="px-4 py-3 text-right text-xs font-semibold text-foreground">EPC</th>
                 <th className="px-4 py-3 text-right text-xs font-semibold text-foreground">Clicks</th>
@@ -289,33 +289,33 @@ export default function DashboardPage() {
             </thead>
             <tbody className="divide-y">
               {campaigns.map((c) => (
-                <tr key={c.campaign} className="hover:bg-secondary/30 transition-colors">
-                  <td className="px-4 py-3 text-sm font-mono text-foreground">{c.campaign.slice(0, 8)}...</td>
+                <tr key={c.source} className="hover:bg-secondary/30 transition-colors">
+                  <td className="px-4 py-3 text-sm font-mono text-foreground">{c.source}</td>
                   <td className="px-4 py-3 text-sm text-foreground">{c.offer}</td>
                   <td className="px-4 py-3 text-right text-sm font-mono text-foreground">${c.epc.toFixed(3)}</td>
                   <td className="px-4 py-3 text-right text-sm font-mono text-foreground">{c.clicks.toLocaleString()}</td>
                   <td className="px-4 py-3 text-right text-sm font-mono text-foreground">{c.cvr.toFixed(2)}%</td>
                   <td className="px-4 py-3 text-right text-sm font-mono text-foreground">${c.revenue.toFixed(2)}</td>
                   <td className="px-4 py-3 text-right">
-                    {editingSpend === c.campaign ? (
+                    {editingSpend === c.source ? (
                       <div className="flex items-center justify-end gap-1">
                         <Input
                           type="number"
                           step="0.01"
-                          value={spendInputs[c.campaign] || ""}
+                          value={spendInputs[c.source] || ""}
                           onChange={(e) =>
-                            setSpendInputs({ ...spendInputs, [c.campaign]: e.target.value })
+                            setSpendInputs({ ...spendInputs, [c.source]: e.target.value })
                           }
                           className="h-7 w-24 text-right text-sm"
                           autoFocus
                         />
-                        <Button size="sm" onClick={() => saveSpend(c.campaign, spendInputs[c.campaign])}>
+                        <Button size="sm" onClick={() => saveSpend(c.source, spendInputs[c.source])}>
                           Save
                         </Button>
                       </div>
                     ) : (
                       <button
-                        onClick={() => setEditingSpend(c.campaign)}
+                        onClick={() => setEditingSpend(c.source)}
                         className="text-sm font-mono text-foreground hover:text-primary"
                       >
                         ${c.spend.toFixed(2)}
