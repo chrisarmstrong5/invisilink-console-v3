@@ -27,6 +27,7 @@ export default function CompetitorsPage() {
   // Form state
   const [contentType, setContentType] = useState<"video" | "slideshow">("video");
   const [mediaFiles, setMediaFiles] = useState<File[]>([]);
+  const [landerScreenshot, setLanderScreenshot] = useState<File | null>(null);
   const [competitor, setCompetitor] = useState("");
   const [niche, setNiche] = useState("");
   const [tags, setTags] = useState("");
@@ -46,9 +47,9 @@ export default function CompetitorsPage() {
     setCompetitors(ads);
   };
 
-  // Dropzone
+  // Dropzone for ad media
   const onDrop = useCallback((acceptedFiles: File[]) => {
-    const maxFiles = contentType === "video" ? 1 : 3;
+    const maxFiles = contentType === "video" ? 1 : 20;
     if (acceptedFiles.length + mediaFiles.length > maxFiles) {
       toast.error(`Maximum ${maxFiles} file${maxFiles > 1 ? "s" : ""} for ${contentType}`);
       return;
@@ -62,7 +63,22 @@ export default function CompetitorsPage() {
       "image/*": [".png", ".jpg", ".jpeg", ".gif"],
       "video/*": [".mp4", ".mov", ".avi"],
     },
-    maxFiles: contentType === "video" ? 1 : 3,
+    maxFiles: contentType === "video" ? 1 : 20,
+  });
+
+  // Separate dropzone for lander screenshot
+  const onLanderDrop = useCallback((acceptedFiles: File[]) => {
+    if (acceptedFiles.length > 0) {
+      setLanderScreenshot(acceptedFiles[0]);
+    }
+  }, []);
+
+  const { getRootProps: getLanderRootProps, getInputProps: getLanderInputProps, isDragActive: isLanderDragActive } = useDropzone({
+    onDrop: onLanderDrop,
+    accept: {
+      "image/*": [".png", ".jpg", ".jpeg", ".gif"],
+    },
+    maxFiles: 1,
   });
 
   // Upload files
@@ -98,11 +114,7 @@ export default function CompetitorsPage() {
       return;
     }
     if (mediaFiles.length === 0) {
-      toast.error(`Please upload ${contentType === "video" ? "a video/screenshot" : "3 slides"}`);
-      return;
-    }
-    if (contentType === "slideshow" && mediaFiles.length !== 3) {
-      toast.error("Please upload exactly 3 slides for slideshow");
+      toast.error(`Please upload ${contentType === "video" ? "a video/screenshot" : "slideshow images"}`);
       return;
     }
 
@@ -110,10 +122,18 @@ export default function CompetitorsPage() {
     try {
       const mediaUrls = await uploadFiles(mediaFiles);
 
+      // Upload lander screenshot if provided
+      let landerScreenshotUrl: string | undefined;
+      if (landerScreenshot) {
+        const landerUrls = await uploadFiles([landerScreenshot]);
+        landerScreenshotUrl = landerUrls[0];
+      }
+
       const newAd: CompetitorAd = {
         id: `COMP${competitors.length + 1}`,
         contentType,
         mediaUrls,
+        landerScreenshotUrl,
         competitor: competitor.trim(),
         niche: niche.trim(),
         tags: tags.split(",").map((t) => t.trim()).filter(Boolean),
@@ -129,6 +149,7 @@ export default function CompetitorsPage() {
       setTags("");
       setNotes("");
       setMediaFiles([]);
+      setLanderScreenshot(null);
       setContentType("video");
 
       toast.success("Competitor ad added successfully!");
@@ -282,6 +303,44 @@ export default function CompetitorsPage() {
                   </button>
                 </div>
               ))}
+            </div>
+          )}
+        </div>
+
+        {/* Lander Screenshot Upload (Optional) */}
+        <div className="mt-6">
+          <Label className="mb-2 block text-sm font-medium text-foreground">
+            Landing Page Screenshot (Optional)
+          </Label>
+          <div
+            {...getLanderRootProps()}
+            className={`cursor-pointer rounded-lg border-2 border-dashed p-6 text-center transition-colors ${
+              isLanderDragActive ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
+            }`}
+          >
+            <input {...getLanderInputProps()} />
+            <Upload className="mx-auto mb-3 h-10 w-10 text-muted-foreground" />
+            <p className="mb-2 text-sm font-medium text-foreground">
+              {isLanderDragActive ? "Drop here" : "Upload lander screenshot (optional)"}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              1 image - screenshot of the landing page this ad links to
+            </p>
+          </div>
+
+          {/* Preview lander screenshot */}
+          {landerScreenshot && (
+            <div className="mt-4">
+              <div className="relative rounded-lg border p-2">
+                <p className="truncate text-xs text-foreground">{landerScreenshot.name}</p>
+                <p className="text-xs text-muted-foreground">{(landerScreenshot.size / 1024).toFixed(1)} KB</p>
+                <button
+                  onClick={() => setLanderScreenshot(null)}
+                  className="absolute -right-2 -top-2 rounded-full bg-red-500 p-1 text-white hover:bg-red-600"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
             </div>
           )}
         </div>

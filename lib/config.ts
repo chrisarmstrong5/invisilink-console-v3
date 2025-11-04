@@ -114,6 +114,7 @@ export type CompetitorAd = {
   id: string;
   contentType: "video" | "slideshow";
   mediaUrls: string[];
+  landerScreenshotUrl?: string;
   competitor: string;
   niche: string;
   tags: string[];

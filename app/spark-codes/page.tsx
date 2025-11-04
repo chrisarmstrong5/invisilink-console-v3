@@ -46,7 +46,7 @@ export default function SparkCodesPage() {
 
   // Dropzone for media upload
   const onDrop = useCallback((acceptedFiles: File[]) => {
-    const maxFiles = contentType === "video" ? 1 : 3;
+    const maxFiles = contentType === "video" ? 1 : 20;
     if (acceptedFiles.length + mediaFiles.length > maxFiles) {
       toast.error(`Maximum ${maxFiles} file${maxFiles > 1 ? "s" : ""} for ${contentType}`);
       return;
@@ -60,7 +60,7 @@ export default function SparkCodesPage() {
       "image/*": [".png", ".jpg", ".jpeg", ".gif"],
       "video/*": [".mp4", ".mov", ".avi"],
     },
-    maxFiles: contentType === "video" ? 1 : 3,
+    maxFiles: contentType === "video" ? 1 : 20,
   });
 
   // Upload files to Vercel Blob
@@ -96,11 +96,7 @@ export default function SparkCodesPage() {
       return;
     }
     if (mediaFiles.length === 0) {
-      toast.error(`Please upload ${contentType === "video" ? "a video/screenshot" : "3 slides"}`);
-      return;
-    }
-    if (contentType === "slideshow" && mediaFiles.length !== 3) {
-      toast.error("Please upload exactly 3 slides for slideshow");
+      toast.error(`Please upload ${contentType === "video" ? "a video/screenshot" : "slideshow images"}`);
       return;
     }
 
@@ -274,7 +270,7 @@ export default function SparkCodesPage() {
               {isDragActive ? "Drop files here" : "Drag & drop files here, or click to browse"}
             </p>
             <p className="text-xs text-muted-foreground">
-              {contentType === "video" ? "1 video or screenshot" : "Exactly 3 images for slideshow"}
+              {contentType === "video" ? "1 video or screenshot" : "Up to 20 images for slideshow"}
             </p>
           </div>
 

@@ -78,9 +78,20 @@ export default function DashboardPage() {
         spendMap[c.campaign] = c.spend.toString();
       });
       setSpendInputs(spendMap);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to load dashboard data:", error);
-      toast.error("Failed to load RedTrack metrics. Please check your API connection.");
+
+      // Show detailed error message
+      const errorMessage = error?.message || "Failed to connect to RedTrack API";
+      const errorDetails = error?.details || "The API key may be invalid or the endpoint structure has changed.";
+
+      toast.error(
+        `RedTrack API Error: ${errorMessage}`,
+        {
+          description: errorDetails,
+          duration: 10000,
+        }
+      );
     }
     setLoading(false);
   }
