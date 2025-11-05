@@ -143,7 +143,7 @@ export const config = {
     delayMs: 50,
   },
   whitePageProject: {
-    deploymentDomain: "https://b.apptime.pro",
+    deploymentDomain: "https://affiliate-cloaking-v3.vercel.app",
     repoPath: "white-pages/deploy-root",
   },
   offers: {
