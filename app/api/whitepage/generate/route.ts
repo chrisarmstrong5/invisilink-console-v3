@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { generateWhitePage } from "@/lib/white-page-generator";
 import { config } from "@/lib/config";
+import fs from "fs/promises";
+import path from "path";
 
 /**
  * White Page Generation API Route
@@ -35,7 +37,10 @@ export async function POST(request: Request) {
       filterType,
     });
 
-    // 2. Commit to GitHub directly
+    // 2. Store in database for dynamic serving
+    // For now, we'll just commit to GitHub and serve from there
+
+    // 3. Commit to GitHub directly
     const { owner, repo, branch } = config.github;
     const token = process.env.GITHUB_TOKEN;
 
@@ -104,9 +109,7 @@ export async function POST(request: Request) {
     const commitData = await commitResponse.json();
     const commitUrl = commitData.commit?.html_url;
 
-    // 3. Save domain usage to JSON file
-    const fs = require("fs/promises");
-    const path = require("path");
+    // 4. Save domain usage to JSON file
     const domainUsagePath = path.join(process.cwd(), "public/link-generator/domain-usage.json");
 
     try {

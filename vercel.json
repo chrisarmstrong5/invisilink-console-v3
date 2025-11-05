@@ -1,13 +1,7 @@
 {
-  "rewrites": [
-    {
-      "source": "/:slug",
-      "destination": "/white-pages/deploy-root/:slug.html"
-    }
-  ],
   "headers": [
     {
-      "source": "/white-pages/deploy-root/(.*)",
+      "source": "/(.*)",
       "headers": [
         {
           "key": "Cache-Control",
