@@ -1,0 +1,19 @@
+{
+  "rewrites": [
+    {
+      "source": "/:slug",
+      "destination": "/white-pages/deploy-root/:slug.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/white-pages/deploy-root/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    }
+  ]
+}

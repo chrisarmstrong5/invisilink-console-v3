@@ -18,6 +18,12 @@ import { toast } from "sonner";
 import { useLocalStorage } from "@/lib/hooks/use-local-storage";
 import { config, type SparkCode, type LinkHistoryItem } from "@/lib/config";
 import {
+  buildTrackingUrl,
+  generateWhitePage,
+  commitWhitePage,
+  saveDomainUsage,
+} from "@/lib/white-page-generator";
+import {
   Copy,
   Plus,
   Sparkles,
@@ -28,6 +34,7 @@ import {
   Trash2,
   ExternalLink,
   Check,
+  Loader2,
 } from "lucide-react";
 
 export default function LinkGenerator() {
@@ -50,12 +57,17 @@ export default function LinkGenerator() {
   // UI State
   const [showHistory, setShowHistory] = useState(false);
   const [showSparkManager, setShowSparkManager] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generationStatus, setGenerationStatus] = useState<string>("");
 
   // Generated Results
   const [trackingUrl, setTrackingUrl] = useState<string>("");
   const [whitePageUrl, setWhitePageUrl] = useState<string>("");
   const [campaignName, setCampaignName] = useState<string>("");
   const [lastSlug, setLastSlug] = useState<string>("");
+  const [commitUrl, setCommitUrl] = useState<string>("");
+  const [testUrlLive, setTestUrlLive] = useState<string>("");
+  const [testUrlBot, setTestUrlBot] = useState<string>("");
 
   // LocalStorage
   const [sparkCodes, setSparkCodes] = useLocalStorage<SparkCode[]>(
@@ -85,69 +97,104 @@ export default function LinkGenerator() {
   }, [domainUsage]);
 
   // Utility Functions
-  const generateUniqueSlug = (): string => {
-    const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
-    let slug = "";
-    for (let i = 0; i < 8; i++) {
-      slug += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return slug;
-  };
-
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
     toast.success(`${label} copied`);
   };
 
-  const generateLink = () => {
+  const generateLink = async () => {
+    // Validation
     if (!selectedOffer) {
       toast.error("Please select an offer");
       return;
     }
-    if (!accountNumber || !/^\d+$/.test(accountNumber)) {
-      toast.error("Please enter a valid account number");
+    // FIXED: Allow alphanumeric account numbers
+    if (!accountNumber || !/^[a-zA-Z0-9_-]+$/.test(accountNumber)) {
+      toast.error("Please enter a valid account number (alphanumeric)");
       return;
     }
 
-    const offerCode = config.offerCodes[selectedOffer as keyof typeof config.offerCodes];
-    const sourceParam = `${accountNumber}${offerCode}`;
-    const campaignId = config.tracker.redtrack.campaigns[selectedOffer as keyof typeof config.tracker.redtrack.campaigns];
+    setIsGenerating(true);
+    setGenerationStatus("Preparing files...");
 
-    let trackingUrlParams = `?s=${sourceParam}`;
-    if (selectedSparkCode && selectedSparkCode !== "none") {
-      trackingUrlParams += `&sub1=${selectedSparkCode}`;
+    try {
+      // 1. Build tracking URL
+      const sparkCodeId = selectedSparkCode === "none" ? undefined : selectedSparkCode;
+      const trackingUrl = buildTrackingUrl(selectedOffer, accountNumber, sparkCodeId);
+
+      setGenerationStatus("Selecting template...");
+
+      // 2. Generate white page (selects template, builds bot script, injects)
+      const { slug, whitePageHtml, templateName } = await generateWhitePage({
+        offerKey: selectedOffer,
+        source: accountNumber,
+        trackingUrl,
+        filterType: botFiltering === "params" ? "params-only" : "advanced",
+      });
+
+      setGenerationStatus("Committing to GitHub...");
+
+      // 3. Commit white page to GitHub
+      const commitUrl = await commitWhitePage(slug, whitePageHtml);
+
+      setGenerationStatus("Updating domain usage...");
+
+      // 4. Save domain usage
+      await saveDomainUsage(selectedDomain);
+
+      // 5. Build URLs
+      const domain = config.cloakDomains.find((d) => d.id === selectedDomain);
+      const baseCloakUrl = `${domain?.url}/${slug}`;
+      const whitePageUrl = `${config.whitePageProject.deploymentDomain}/${slug}`;
+
+      // Submission URL (with ppc=__PLACEMENT__ for bot detection)
+      const submissionUrl = `${baseCloakUrl}?${config.headScriptDefaults.placementParam}=${config.headScriptDefaults.botPlacementValue}`;
+
+      // Test URLs
+      const testLive = `${baseCloakUrl}?${config.headScriptDefaults.placementParam}=NEWS_FEED&ttclid=TEST12345`;
+      const testBot = `${baseCloakUrl}?${config.headScriptDefaults.placementParam}=${config.headScriptDefaults.botPlacementValue}`;
+
+      // Campaign name
+      const sparkCodeName = sparkCodeId
+        ? sparkCodes.find((sc) => sc.id === sparkCodeId)?.name || sparkCodeId
+        : "no-spark";
+      const offerName = config.offers[selectedOffer as keyof typeof config.offers]?.name || selectedOffer;
+      const campaignName = `${offerName.replace(/\s+/g, "")}-${accountNumber}-${sparkCodeName}-${platform}`;
+
+      // Set results
+      setTrackingUrl(trackingUrl);
+      setWhitePageUrl(submissionUrl);
+      setCampaignName(campaignName);
+      setLastSlug(slug);
+      setCommitUrl(commitUrl || "");
+      setTestUrlLive(testLive);
+      setTestUrlBot(testBot);
+
+      // Save to history
+      const historyItem: LinkHistoryItem = {
+        id: Date.now().toString(),
+        timestamp: new Date().toISOString(),
+        offer: offerName,
+        account: accountNumber,
+        sparkCode: sparkCodeId,
+        domain: selectedDomain,
+        trackingUrl,
+        whitePageUrl: submissionUrl,
+        campaignName,
+      };
+
+      setLinkHistory([historyItem, ...linkHistory.slice(0, 29)]);
+
+      setGenerationStatus("Complete!");
+      toast.success("Links generated successfully - white page deployed!");
+    } catch (error) {
+      console.error("Generation error:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to generate links");
+      setGenerationStatus("Error");
+    } finally {
+      setIsGenerating(false);
+      setTimeout(() => setGenerationStatus(""), 2000);
     }
-
-    const generatedTrackingUrl = `https://${config.tracker.redtrack.domain}/${campaignId}${trackingUrlParams}`;
-    const slug = generateUniqueSlug();
-    const domain = config.cloakDomains.find((d) => d.id === selectedDomain);
-    const generatedWhitePageUrl = `${domain?.url}/${slug}`;
-
-    const sparkCodeName = selectedSparkCode && selectedSparkCode !== "none"
-      ? sparkCodes.find((sc) => sc.id === selectedSparkCode)?.name || selectedSparkCode
-      : "no-spark";
-    const offerName = config.offers[selectedOffer as keyof typeof config.offers]?.name || selectedOffer;
-    const generatedCampaignName = `${offerName.replace(/\s+/g, "")}-${accountNumber}-${sparkCodeName}-${platform}`;
-
-    setTrackingUrl(generatedTrackingUrl);
-    setWhitePageUrl(generatedWhitePageUrl);
-    setCampaignName(generatedCampaignName);
-    setLastSlug(slug);
-
-    const historyItem: LinkHistoryItem = {
-      id: Date.now().toString(),
-      timestamp: new Date().toISOString(),
-      offer: offerName,
-      account: accountNumber,
-      sparkCode: selectedSparkCode === "none" ? undefined : selectedSparkCode,
-      domain: selectedDomain,
-      trackingUrl: generatedTrackingUrl,
-      whitePageUrl: generatedWhitePageUrl,
-      campaignName: generatedCampaignName,
-    };
-
-    setLinkHistory([historyItem, ...linkHistory.slice(0, 29)]);
-    toast.success("Links generated successfully");
   };
 
   const clearHistory = () => {

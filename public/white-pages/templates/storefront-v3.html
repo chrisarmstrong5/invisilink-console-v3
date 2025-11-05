@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+{{HEAD_SCRIPT}}
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Electric Bazaar — Design Finds</title>
+    <meta name="description" content="Electric Bazaar curates bold color, punchy forms, and future-forward home accents." />
+    <style>
+        :root {
+            --bg: #070315;
+            --text: #f9f6ff;
+            --muted: rgba(249, 246, 255, 0.68);
+            --accent: #7c5bff;
+            --accent-2: #ff5fa2;
+            --accent-3: #39ffd3;
+            --card: rgba(10, 6, 28, 0.82);
+            --border: rgba(124, 91, 255, 0.3);
+            --shadow: 0 18px 50px rgba(124, 91, 255, 0.22);
+            --radius: 22px;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; }
+        html, body {
+            margin: 0;
+            padding: 0;
+            background: radial-gradient(circle at 20% 20%, rgba(124, 91, 255, 0.08), transparent 40%), radial-gradient(circle at 80% 0%, rgba(57, 255, 211, 0.1), transparent 42%), var(--bg);
+            color: var(--text);
+            font-family: "Satoshi", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+        img { max-width: 100%; display: block; }
+        a { color: inherit; text-decoration: none; }
+
+        .container {
+            width: min(1180px, 92vw);
+            margin-inline: auto;
+        }
+
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            backdrop-filter: blur(16px);
+            background: rgba(7, 3, 21, 0.72);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 22px 0;
+        }
+
+        .brand {
+            display: flex;
+            gap: 0.8rem;
+            align-items: center;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+        }
+
+        .brand-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: conic-gradient(from 140deg, var(--accent), var(--accent-2), var(--accent-3), var(--accent));
+            box-shadow: 0 8px 24px rgba(124, 91, 255, 0.35);
+        }
+
+        .nav ul {
+            list-style: none;
+            display: flex;
+            gap: 1.4rem;
+            margin: 0;
+            padding: 0;
+            font-size: 0.95rem;
+        }
+
+        .nav a {
+            padding: 0.55rem 0.85rem;
+            border-radius: 12px;
+            background: rgba(124, 91, 255, 0.1);
+            border: 1px solid transparent;
+            transition: transform 0.2s ease, border 0.2s ease;
+        }
+
+        .nav a:hover {
+            transform: translateY(-1px);
+            border-color: rgba(124, 91, 255, 0.5);
+        }
+
+        .hero {
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            gap: 36px;
+            padding: 60px 0 40px;
+        }
+
+        .hero-card {
+            padding: 42px;
+            background: var(--card);
+            border-radius: var(--radius);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-card::after {
+            content: "";
+            position: absolute;
+            inset: -40% 20% auto;
+            height: 240px;
+            background: radial-gradient(circle at center, rgba(255, 95, 162, 0.4), transparent 60%);
+            opacity: 0.55;
+            pointer-events: none;
+        }
+
+        .kicker {
+            text-transform: uppercase;
+            letter-spacing: 0.32em;
+            font-size: 0.68rem;
+            color: var(--accent-3);
+        }
+
+        h1 {
+            margin: 0.7rem 0 1.2rem;
+            font-size: clamp(2.1rem, 3.8vw, 3.6rem);
+            letter-spacing: -0.015em;
+        }
+
+        .lead {
+            color: var(--muted);
+            font-size: 1.05rem;
+            line-height: 1.7;
+            max-width: 58ch;
+        }
+
+        .hero-cta {
+            margin-top: 1.8rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.95rem 1.35rem;
+            border-radius: 999px;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            border: 1px solid transparent;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .btn.primary {
+            background: linear-gradient(90deg, var(--accent), var(--accent-2));
+            color: #090512;
+            box-shadow: 0 12px 26px rgba(124, 91, 255, 0.35);
+        }
+
+        .btn.secondary {
+            background: rgba(249, 246, 255, 0.08);
+            border-color: rgba(249, 246, 255, 0.18);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .showcase {
+            position: relative;
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .showcase::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(124, 91, 255, 0), rgba(7, 3, 21, 0.7));
+        }
+
+        .showcase img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            aspect-ratio: 4 / 3;
+            filter: saturate(1.2) contrast(1.05);
+        }
+
+        .section-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 1rem;
+            margin: 36px 0 22px;
+        }
+
+        .section-head h2 {
+            margin: 0;
+            font-size: clamp(1.4rem, 2.4vw, 1.9rem);
+        }
+
+        .section-head p {
+            margin: 0;
+            color: var(--muted);
+        }
+
+        .grid {
+            display: grid;
+            gap: 18px;
+            grid-template-columns: repeat(12, 1fr);
+        }
+
+        .product-card {
+            grid-column: span 12;
+            background: rgba(13, 8, 34, 0.92);
+            border-radius: var(--radius);
+            overflow: hidden;
+            border: 1px solid rgba(124, 91, 255, 0.24);
+            box-shadow: 0 14px 32px rgba(124, 91, 255, 0.24);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .product-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 18px 36px rgba(255, 95, 162, 0.25);
+        }
+
+        .product-card img {
+            aspect-ratio: 1 / 1;
+            object-fit: cover;
+            filter: contrast(1.08) saturate(1.1);
+        }
+
+        .card-body {
+            padding: 20px 22px;
+        }
+
+        .title {
+            margin: 0 0 0.4rem;
+            font-size: 1.08rem;
+            font-weight: 600;
+        }
+
+        .sub {
+            color: var(--muted);
+            font-size: 0.92rem;
+            margin: 0 0 0.7rem;
+        }
+
+        .price {
+            font-weight: 700;
+            color: var(--accent-3);
+            font-size: 1.05rem;
+        }
+
+        .card-actions {
+            padding: 0 22px 20px;
+            display: flex;
+            gap: 0.6rem;
+        }
+
+        .pill {
+            padding: 0.65rem 0.95rem;
+            border-radius: 999px;
+            border: 1px solid rgba(124, 91, 255, 0.4);
+            background: rgba(124, 91, 255, 0.12);
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .pill:hover {
+            background: rgba(124, 91, 255, 0.25);
+        }
+
+        .pill.ghost {
+            background: transparent;
+        }
+
+        footer {
+            margin-top: 60px;
+            padding: 32px 0 48px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            color: var(--muted);
+        }
+
+        .foot {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .foot-links {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .foot-links a {
+            padding: 0.45rem 0.7rem;
+            border-radius: 12px;
+            background: rgba(57, 255, 211, 0.12);
+        }
+
+        .foot-links a:hover {
+            background: rgba(255, 95, 162, 0.18);
+        }
+
+        @media (min-width: 720px) { .product-card { grid-column: span 6; } }
+        @media (min-width: 1100px) { .product-card { grid-column: span 4; } }
+        @media (max-width: 920px) {
+            .hero { grid-template-columns: 1fr; }
+            .showcase { order: -1; }
+        }
+    </style>
+</head>
+<body>
+    <header aria-label="Global navigation">
+        <div class="container nav">
+            <a class="brand" href="#">
+                <span class="brand-icon" aria-hidden="true"></span>
+                <span>Electric Bazaar</span>
+            </a>
+            <nav aria-label="Primary">
+                <ul>
+                    <li><a href="#">New Arrivals</a></li>
+                    <li><a href="#">Objects</a></li>
+                    <li><a href="#">Lighting</a></li>
+                    <li><a href="#">Textiles</a></li>
+                    <li><a href="#">Studio</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="container hero" aria-labelledby="hero-title">
+            <div class="hero-card">
+                <p class="kicker">Drop 013 · Hypercolor</p>
+                <h1 id="hero-title">Future-leaning decor for the expressive set</h1>
+                <p class="lead">
+                    Energize any room with chromatic lighting, sculptural statement pieces, and tactile accents sourced from next-gen designers.
+                    Limited batches, refreshed every Friday.
+                </p>
+                <div class="hero-cta">
+                    <a class="btn primary" href="#">Explore Drop 013</a>
+                    <a class="btn secondary" href="#">Artist Spotlights</a>
+                </div>
+            </div>
+            <div class="showcase" aria-hidden="true">
+                <img src="https://picsum.photos/1200/900?random=3001" alt="Colorful living room with neon lighting">
+            </div>
+        </section>
+
+        <section class="container" aria-labelledby="products-title">
+            <div class="section-head">
+                <h2 id="products-title">Signal Boosts</h2>
+                <p>Loud, luminous, unapologetic. Pick your signature piece.</p>
+            </div>
+
+            <div class="grid">
+                <article class="product-card">
+                    <img src="https://picsum.photos/600/600?random=301" alt="Nebula Prism Lamp product image">
+                    <div class="card-body">
+                        <h3 class="title">Nebula Prism Lamp</h3>
+                        <p class="sub">RGB glass sculpture with ambient diffusion core.</p>
+                        <p class="price">$168</p>
+                    </div>
+                    <div class="card-actions">
+                        <a class="pill" href="#">View Details</a>
+                        <a class="pill ghost" href="#">Save</a>
+                    </div>
+                </article>
+
+                <article class="product-card">
+                    <img src="https://picsum.photos/600/600?random=302" alt="Pulse Arc Mirror product image">
+                    <div class="card-body">
+                        <h3 class="title">Pulse Arc Mirror</h3>
+                        <p class="sub">Hand-cut mirror with electrochromic frame glow.</p>
+                        <p class="price">$210</p>
+                    </div>
+                    <div class="card-actions">
+                        <a class="pill" href="#">View Details</a>
+                        <a class="pill ghost" href="#">Save</a>
+                    </div>
+                </article>
+
+                <article class="product-card">
+                    <img src="https://picsum.photos/600/600?random=303" alt="Horizon Wave Throw product image">
+                    <div class="card-body">
+                        <h3 class="title">Horizon Wave Throw</h3>
+                        <p class="sub">Jacquard knit with thermal-reactive fibers.</p>
+                        <p class="price">$124</p>
+                    </div>
+                    <div class="card-actions">
+                        <a class="pill" href="#">View Details</a>
+                        <a class="pill ghost" href="#">Save</a>
+                    </div>
+                </article>
+
+                <article class="product-card">
+                    <img src="https://picsum.photos/600/600?random=304" alt="Orbit Speaker Column product image">
+                    <div class="card-body">
+                        <h3 class="title">Orbit Speaker Column</h3>
+                        <p class="sub">360° audio tower with reactive LED spine.</p>
+                        <p class="price">$298</p>
+                    </div>
+                    <div class="card-actions">
+                        <a class="pill" href="#">View Details</a>
+                        <a class="pill ghost" href="#">Save</a>
+                    </div>
+                </article>
+
+                <article class="product-card">
+                    <img src="https://picsum.photos/600/600?random=305" alt="Flux Resin Side Table product image">
+                    <div class="card-body">
+                        <h3 class="title">Flux Resin Side Table</h3>
+                        <p class="sub">UV-reactive resin with embedded metallic mesh.</p>
+                        <p class="price">$232</p>
+                    </div>
+                    <div class="card-actions">
+                        <a class="pill" href="#">View Details</a>
+                        <a class="pill ghost" href="#">Save</a>
+                    </div>
+                </article>
+            </div>
+        </section>
+    </main>
+
+    <footer aria-label="Site footer">
+        <div class="container foot">
+            <p>© <span id="year">2025</span> Electric Bazaar. Signal responsibly.</p>
+            <div class="foot-links">
+                <a href="#">Terms of Service</a>
+                <a href="#">Privacy Policy</a>
+                <a href="#">Contact</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+    </script>
+</body>
+</html>
