@@ -25,7 +25,15 @@ export async function POST(request: Request) {
       );
     }
 
-    const { owner, repo, branch, token } = config.github;
+    const { owner, repo, branch } = config.github;
+    const token = process.env.GITHUB_TOKEN;
+
+    if (!token) {
+      return NextResponse.json(
+        { error: "GitHub token not configured. Set GITHUB_TOKEN environment variable." },
+        { status: 500 }
+      );
+    }
 
     // Get existing file SHA (if exists) - required for updates
     let sha: string | undefined;

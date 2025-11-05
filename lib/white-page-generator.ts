@@ -93,11 +93,20 @@ export function buildTrackingUrl(offerKey: string, source: string, sparkCodeId?:
  * Fetch template HTML from public directory
  */
 export async function fetchTemplate(templatePath: string): Promise<string> {
-  const response = await fetch(templatePath + `?v=${Date.now()}`);
-  if (!response.ok) {
-    throw new Error(`Failed to fetch template: ${templatePath}`);
+  // Read file from filesystem (server-side only)
+  const fs = require("fs/promises");
+  const path = require("path");
+
+  // Template paths in config start with /white-pages/...
+  // which maps to public/white-pages/...
+  const fullPath = path.join(process.cwd(), "public", templatePath);
+
+  try {
+    const html = await fs.readFile(fullPath, "utf-8");
+    return html;
+  } catch (error) {
+    throw new Error(`Failed to read template: ${templatePath} (${error instanceof Error ? error.message : "unknown error"})`);
   }
-  return await response.text();
 }
 
 /**

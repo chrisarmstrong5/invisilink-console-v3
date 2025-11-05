@@ -75,7 +75,7 @@ export const config = {
   defaultCloakDomain: "cartrewards",
   github: {
     owner: "chrisarmstrong5",
-    repo: "affiliate-cloaking-v3",
+    repo: "invisilink-console-v3",
     branch: "main",
     token: process.env.GITHUB_TOKEN || "",
   },

@@ -17,12 +17,7 @@ import { SparkCodeManager } from "@/components/spark-code-manager";
 import { toast } from "sonner";
 import { useLocalStorage } from "@/lib/hooks/use-local-storage";
 import { config, type SparkCode, type LinkHistoryItem } from "@/lib/config";
-import {
-  buildTrackingUrl,
-  generateWhitePage,
-  commitWhitePage,
-  saveDomainUsage,
-} from "@/lib/white-page-generator";
+import { buildTrackingUrl } from "@/lib/link-utilities";
 import {
   Copy,
   Plus,
@@ -122,25 +117,29 @@ export default function LinkGenerator() {
       const sparkCodeId = selectedSparkCode === "none" ? undefined : selectedSparkCode;
       const trackingUrl = buildTrackingUrl(selectedOffer, accountNumber, sparkCodeId);
 
-      setGenerationStatus("Selecting template...");
+      setGenerationStatus("Generating white page...");
 
-      // 2. Generate white page (selects template, builds bot script, injects)
-      const { slug, whitePageHtml, templateName } = await generateWhitePage({
-        offerKey: selectedOffer,
-        source: accountNumber,
-        trackingUrl,
-        filterType: botFiltering === "params" ? "params-only" : "advanced",
+      // 2. Call API to generate white page, commit to GitHub, and save domain usage
+      const response = await fetch("/api/whitepage/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          offerKey: selectedOffer,
+          source: accountNumber,
+          trackingUrl,
+          filterType: botFiltering === "params" ? "params-only" : "advanced",
+          domain: selectedDomain,
+        }),
       });
 
-      setGenerationStatus("Committing to GitHub...");
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to generate white page");
+      }
 
-      // 3. Commit white page to GitHub
-      const commitUrl = await commitWhitePage(slug, whitePageHtml);
+      const { slug, templateName, commitUrl } = await response.json();
 
-      setGenerationStatus("Updating domain usage...");
-
-      // 4. Save domain usage
-      await saveDomainUsage(selectedDomain);
+      setGenerationStatus("Complete!");
 
       // 5. Build URLs
       const domain = config.cloakDomains.find((d) => d.id === selectedDomain);
