@@ -71,7 +71,7 @@ export async function POST(request: Request) {
         const fileData = await getResponse.json();
         sha = fileData.sha;
       }
-    } catch (error) {
+    } catch {
       console.log(`File ${filePath} does not exist yet, creating new file`);
     }
 

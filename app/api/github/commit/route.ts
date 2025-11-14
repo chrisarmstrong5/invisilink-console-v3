@@ -54,7 +54,7 @@ export async function POST(request: Request) {
         sha = fileData.sha;
       }
       // 404 is expected for new files, continue without SHA
-    } catch (error) {
+    } catch {
       console.log(`File ${path} does not exist yet, creating new file`);
     }
 

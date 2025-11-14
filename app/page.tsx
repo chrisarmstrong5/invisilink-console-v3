@@ -22,7 +22,6 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { redtrackApi, type RedTrackMetrics } from "@/lib/api/redtrack";
-import { config } from "@/lib/config";
 import { toast } from "sonner";
 
 interface DailyStats {
@@ -50,11 +49,6 @@ export default function DashboardPage() {
   const [editingSpend, setEditingSpend] = useState<string | null>(null);
   const [spendInputs, setSpendInputs] = useState<Record<string, string>>({});
 
-  // Load data
-  useEffect(() => {
-    loadDashboardData();
-  }, [timeRange]);
-
   async function loadDashboardData() {
     setLoading(true);
     try {
@@ -78,12 +72,12 @@ export default function DashboardPage() {
         spendMap[c.source] = c.spend.toString();
       });
       setSpendInputs(spendMap);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Failed to load dashboard data:", error);
 
       // Show detailed error message
-      const errorMessage = error?.message || "Failed to connect to RedTrack API";
-      const errorDetails = error?.details || "The API key may be invalid or the endpoint structure has changed.";
+      const errorMessage = error instanceof Error ? error.message : "Failed to connect to RedTrack API";
+      const errorDetails = (error as { details?: string })?.details || "The API key may be invalid or the endpoint structure has changed.";
 
       toast.error(
         `RedTrack API Error: ${errorMessage}`,
@@ -95,6 +89,12 @@ export default function DashboardPage() {
     }
     setLoading(false);
   }
+
+  // Load data
+  useEffect(() => {
+    loadDashboardData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [timeRange]);
 
   // Save spend to localStorage
   function saveSpend(source: string, value: string) {
