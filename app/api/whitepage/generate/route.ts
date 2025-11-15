@@ -16,11 +16,34 @@ interface GenerateRequest {
   trackingUrl: string;
   filterType?: "params-only" | "advanced";
   domain: string;
+  // V2 Features
+  customUrl?: string;
+  disableCloaking?: boolean;
+  geoTargeting?: {
+    enabled: boolean;
+    targetCountries: string[];
+  };
+  tiktok?: {
+    pixelEnabled: boolean;
+    pixelId: string;
+    browserRedirectEnabled: boolean;
+    strictBotDetectionEnabled: boolean;
+  };
 }
 
 export async function POST(request: Request) {
   try {
-    const { offerKey, source, trackingUrl, filterType = "params-only", domain }: GenerateRequest = await request.json();
+    const {
+      offerKey,
+      source,
+      trackingUrl,
+      filterType = "params-only",
+      domain,
+      customUrl,
+      disableCloaking,
+      geoTargeting,
+      tiktok,
+    }: GenerateRequest = await request.json();
 
     if (!offerKey || !source || !trackingUrl || !domain) {
       return NextResponse.json(
@@ -35,6 +58,10 @@ export async function POST(request: Request) {
       source,
       trackingUrl,
       filterType,
+      customUrl,
+      disableCloaking,
+      geoTargeting,
+      tiktok,
     });
 
     // 2. Store in database for dynamic serving

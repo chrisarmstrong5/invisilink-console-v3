@@ -11,13 +11,32 @@
  */
 
 import { config } from "./config";
-import { buildHeadScript, buildHeadScript_ParamsOnly, injectHeadScript } from "./bot-detection";
+import {
+  buildHeadScript,
+  buildHeadScript_ParamsOnly,
+  injectHeadScript,
+  buildCompleteHeadScript,
+} from "./bot-detection";
+import { buildGeoTargetingScript } from "./geo-targeting";
 
 export interface WhitePageGenerationOptions {
   offerKey: string;
   source: string;
   trackingUrl: string;
   filterType?: "params-only" | "advanced";
+  // V2 Features
+  customUrl?: string;
+  disableCloaking?: boolean;
+  geoTargeting?: {
+    enabled: boolean;
+    targetCountries: string[];
+  };
+  tiktok?: {
+    pixelEnabled: boolean;
+    pixelId: string;
+    browserRedirectEnabled: boolean;
+    strictBotDetectionEnabled: boolean;
+  };
 }
 
 export interface WhitePageGenerationResult {
@@ -116,14 +135,24 @@ export async function fetchTemplate(templatePath: string): Promise<string> {
  * 1. Generate unique slug
  * 2. Select random template
  * 3. Fetch template HTML
- * 4. Build bot detection script
- * 5. Inject script into template
- * 6. Return white page HTML + metadata
+ * 4. Build bot detection script with all features
+ * 5. Build geo-targeting script (if enabled)
+ * 6. Inject scripts into template
+ * 7. Return white page HTML + metadata
  */
 export async function generateWhitePage(
   options: WhitePageGenerationOptions
 ): Promise<WhitePageGenerationResult> {
-  const { offerKey, source, trackingUrl, filterType = "params-only" } = options;
+  const {
+    offerKey,
+    source,
+    trackingUrl,
+    filterType = "params-only",
+    customUrl,
+    disableCloaking,
+    geoTargeting,
+    tiktok,
+  } = options;
 
   // 1. Generate slug
   const slug = generateSlug(offerKey, source);
@@ -134,18 +163,37 @@ export async function generateWhitePage(
   // 3. Fetch template HTML
   const templateHtml = await fetchTemplate(template.path);
 
-  // 4. Build bot detection script
-  const scriptBuilder = filterType === "params-only" ? buildHeadScript_ParamsOnly : buildHeadScript;
-  const botScript = scriptBuilder({
-    primaryUrl: trackingUrl,
-    fallbackUrl: trackingUrl,
+  // 4. Build complete head script with all features (bot detection + TikTok)
+  const finalTrackingUrl = customUrl || trackingUrl;
+
+  const headScript = buildCompleteHeadScript({
+    primaryUrl: finalTrackingUrl,
+    fallbackUrl: finalTrackingUrl,
     placementParam: config.headScriptDefaults.placementParam,
     botPlacementValue: config.headScriptDefaults.botPlacementValue,
     delayMs: config.headScriptDefaults.delayMs,
+    filterType,
+    disableCloaking,
+    tiktok,
   });
 
-  // 5. Inject script into template
-  const whitePageHtml = injectHeadScript(templateHtml, botScript);
+  // 5. Build geo-targeting script (if enabled)
+  let geoScript = "";
+  if (geoTargeting?.enabled && geoTargeting.targetCountries.length > 0) {
+    // For geo-targeting, we redirect blocked countries to the white page itself
+    // and allowed countries to the tracking URL
+    const whitePageUrl = `${config.whitePageProject.deploymentDomain}/${slug}`;
+    geoScript = buildGeoTargetingScript({
+      enabled: true,
+      targetCountries: geoTargeting.targetCountries,
+      redirectUrl: whitePageUrl, // Block by staying on white page
+      primaryUrl: finalTrackingUrl, // Allow by redirecting to offer
+    });
+  }
+
+  // 6. Combine scripts and inject into template
+  const combinedScripts = [geoScript, headScript].filter((s) => s).join("\n");
+  const whitePageHtml = injectHeadScript(templateHtml, combinedScripts);
 
   return {
     slug,

@@ -160,6 +160,60 @@ export const config = {
     "swift-venmo": { name: "Swift Venmo", code: "SV" },
     "swift-amazon": { name: "Heel Amazon", code: "SA" },
   },
+  // V2 Features Configuration
+  geoTargeting: {
+    enabled: true,
+    apiUrl: "http://ip-api.com/json",
+    countries: [
+      // English-speaking countries
+      { code: "US", name: "United States", region: "english-speaking" },
+      { code: "GB", name: "United Kingdom", region: "english-speaking" },
+      { code: "CA", name: "Canada", region: "english-speaking" },
+      { code: "AU", name: "Australia", region: "english-speaking" },
+      { code: "NZ", name: "New Zealand", region: "english-speaking" },
+      { code: "IE", name: "Ireland", region: "english-speaking" },
+      // Nordic countries
+      { code: "NO", name: "Norway", region: "european" },
+      { code: "SE", name: "Sweden", region: "european" },
+      { code: "DK", name: "Denmark", region: "european" },
+      { code: "FI", name: "Finland", region: "european" },
+      { code: "IS", name: "Iceland", region: "european" },
+      { code: "CH", name: "Switzerland", region: "european" },
+      // Western Europe
+      { code: "NL", name: "Netherlands", region: "european" },
+      { code: "BE", name: "Belgium", region: "european" },
+      { code: "LU", name: "Luxembourg", region: "european" },
+      { code: "DE", name: "Germany", region: "european" },
+      { code: "AT", name: "Austria", region: "european" },
+      { code: "FR", name: "France", region: "european" },
+      { code: "IT", name: "Italy", region: "european" },
+      { code: "ES", name: "Spain", region: "european" },
+      { code: "PT", name: "Portugal", region: "european" },
+      // Asia-Pacific
+      { code: "SG", name: "Singapore", region: "other" },
+      { code: "JP", name: "Japan", region: "other" },
+    ] as GeoTargetingCountry[],
+  },
+  tiktok: {
+    pixelDefaults: {
+      enabled: false,
+      pixelId: "D45OCM3C77U0CLRNMLJG",
+    },
+    browserRedirect: {
+      enabled: false,
+      forceBrowserOpen: true,
+    },
+    strictBotDetection: {
+      enabled: false,
+      additionalPatterns: ["bytedance", "tiktok", "musically"],
+    },
+  },
+  killSwitch: {
+    enabled: true,
+    storageKey: "affiliate-kill-list",
+    githubEnabled: true,
+    killListPath: "kill-list.json",
+  },
 };
 
 export type SparkCode = {
@@ -205,4 +259,36 @@ export type LinkHistoryItem = {
   trackingUrl: string;
   whitePageUrl: string;
   campaignName: string;
+  // V2 features
+  customUrl?: string;
+  filterType?: "params-only" | "advanced";
+  geoTargeting?: {
+    enabled: boolean;
+    countries: string[];
+  };
+  tiktok?: {
+    pixelEnabled: boolean;
+    pixelId?: string;
+    browserRedirectEnabled: boolean;
+    strictBotDetectionEnabled: boolean;
+  };
+  disableCloaking?: boolean;
+  isKilled?: boolean;
+  killedAt?: string;
+  templateName?: string;
+};
+
+export type KillListItem = {
+  slug: string;
+  domain: string;
+  killedAt: string;
+  reason?: string;
+  canRestore: boolean;
+  originalLink: LinkHistoryItem;
+};
+
+export type GeoTargetingCountry = {
+  code: string;
+  name: string;
+  region: "english-speaking" | "european" | "other";
 };

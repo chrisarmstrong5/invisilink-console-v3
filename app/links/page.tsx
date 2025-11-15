@@ -14,10 +14,15 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { SparkCodeManager } from "@/components/spark-code-manager";
+import { GeoTargetingSelector } from "@/components/geo-targeting-selector";
+import { TikTokConfig } from "@/components/tiktok-config";
+import { AdvancedLinkOptions } from "@/components/advanced-link-options";
+import { KillSwitchButton } from "@/components/kill-switch-button";
 import { toast } from "sonner";
 import { useLocalStorage } from "@/lib/hooks/use-local-storage";
 import { config, type SparkCode, type LinkHistoryItem } from "@/lib/config";
 import { buildTrackingUrl } from "@/lib/link-utilities";
+import { isLinkKilled } from "@/lib/kill-list-manager";
 import {
   Copy,
   Plus,
@@ -49,11 +54,25 @@ export default function LinkGenerator() {
   const [randomizeStorefront, setRandomizeStorefront] = useState(true);
   const [tiktokHeadScript, setTiktokHeadScript] = useState(true);
 
+  // V2 Features State
+  const [customUrl, setCustomUrl] = useState<string>("");
+  const [disableCloaking, setDisableCloaking] = useState(false);
+  const [geoTargetingEnabled, setGeoTargetingEnabled] = useState(false);
+  const [selectedGeoCountries, setSelectedGeoCountries] = useState<string[]>([]);
+  const [tiktokPixelEnabled, setTiktokPixelEnabled] = useState(false);
+  const [tiktokPixelId, setTiktokPixelId] = useState<string>(
+    config.tiktok.pixelDefaults.pixelId
+  );
+  const [tiktokBrowserRedirect, setTiktokBrowserRedirect] = useState(false);
+  const [tiktokStrictBotDetection, setTiktokStrictBotDetection] =
+    useState(false);
+
   // UI State
   const [showHistory, setShowHistory] = useState(false);
   const [showSparkManager, setShowSparkManager] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationStatus, setGenerationStatus] = useState<string>("");
+  const [killListRefresh, setKillListRefresh] = useState(0);
 
   // Generated Results
   const [trackingUrl, setTrackingUrl] = useState<string>("");
@@ -126,9 +145,24 @@ export default function LinkGenerator() {
         body: JSON.stringify({
           offerKey: selectedOffer,
           source: accountNumber,
-          trackingUrl,
+          trackingUrl: customUrl || trackingUrl, // Use custom URL if provided
           filterType: botFiltering === "params" ? "params-only" : "advanced",
           domain: selectedDomain,
+          // V2 Features
+          customUrl,
+          disableCloaking,
+          geoTargeting: geoTargetingEnabled
+            ? {
+                enabled: true,
+                targetCountries: selectedGeoCountries,
+              }
+            : undefined,
+          tiktok: {
+            pixelEnabled: tiktokPixelEnabled,
+            pixelId: tiktokPixelId,
+            browserRedirectEnabled: tiktokBrowserRedirect,
+            strictBotDetectionEnabled: tiktokStrictBotDetection,
+          },
         }),
       });
 
@@ -177,9 +211,27 @@ export default function LinkGenerator() {
         account: accountNumber,
         sparkCode: sparkCodeId,
         domain: selectedDomain,
-        trackingUrl,
+        trackingUrl: customUrl || trackingUrl,
         whitePageUrl: submissionUrl,
         campaignName,
+        templateName,
+        // V2 Features
+        customUrl: customUrl || undefined,
+        filterType: botFiltering === "params" ? "params-only" : "advanced",
+        geoTargeting: geoTargetingEnabled
+          ? {
+              enabled: true,
+              countries: selectedGeoCountries,
+            }
+          : undefined,
+        tiktok: {
+          pixelEnabled: tiktokPixelEnabled,
+          pixelId: tiktokPixelId,
+          browserRedirectEnabled: tiktokBrowserRedirect,
+          strictBotDetectionEnabled: tiktokStrictBotDetection,
+        },
+        disableCloaking,
+        isKilled: false,
       };
 
       setLinkHistory([historyItem, ...linkHistory.slice(0, 29)]);
@@ -474,6 +526,41 @@ export default function LinkGenerator() {
                   </div>
                 </div>
 
+                {/* V2 Features */}
+                <div className="pt-4 border-t border-[#2A2D35] space-y-4">
+                  <h3 className="text-xs font-medium text-slate-300">
+                    Advanced Features (V2)
+                  </h3>
+
+                  {/* Geo-Targeting */}
+                  <GeoTargetingSelector
+                    enabled={geoTargetingEnabled}
+                    selectedCountries={selectedGeoCountries}
+                    onEnabledChange={setGeoTargetingEnabled}
+                    onCountriesChange={setSelectedGeoCountries}
+                  />
+
+                  {/* TikTok Configuration */}
+                  <TikTokConfig
+                    pixelEnabled={tiktokPixelEnabled}
+                    pixelId={tiktokPixelId}
+                    browserRedirectEnabled={tiktokBrowserRedirect}
+                    strictBotDetectionEnabled={tiktokStrictBotDetection}
+                    onPixelEnabledChange={setTiktokPixelEnabled}
+                    onPixelIdChange={setTiktokPixelId}
+                    onBrowserRedirectChange={setTiktokBrowserRedirect}
+                    onStrictBotDetectionChange={setTiktokStrictBotDetection}
+                  />
+
+                  {/* Advanced Link Options */}
+                  <AdvancedLinkOptions
+                    customUrl={customUrl}
+                    disableCloaking={disableCloaking}
+                    onCustomUrlChange={setCustomUrl}
+                    onDisableCloakingChange={setDisableCloaking}
+                  />
+                </div>
+
                 {/* Generate Button */}
                 <Button
                   onClick={generateLink}
@@ -622,53 +709,98 @@ export default function LinkGenerator() {
 
           {showHistory && linkHistory.length > 0 && (
             <div className="mt-4 space-y-2">
-              {linkHistory.map((item) => (
-                <div
-                  key={item.id}
-                  className="bg-secondary border rounded-lg p-3.5 hover:border-ring/50 transition-colors"
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1.5">
-                        <Badge variant="outline" className="text-xs">
-                          {item.offer}
-                        </Badge>
-                        <span className="text-xs text-slate-400">
-                          Account: {item.account}
-                        </span>
-                        {item.sparkCode && (
-                          <Badge className="text-xs bg-purple-500/10 text-purple-400 border-purple-500/20">
-                            {item.sparkCode}
+              {linkHistory.map((item) => {
+                const isKilled = isLinkKilled(item.whitePageUrl);
+                return (
+                  <div
+                    key={item.id}
+                    className={`border rounded-lg p-3.5 hover:border-ring/50 transition-colors ${
+                      isKilled ? "bg-red-500/5 border-red-500/30" : "bg-secondary"
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1">
+                        <div className="flex items-center flex-wrap gap-2 mb-1.5">
+                          <Badge variant="outline" className="text-xs">
+                            {item.offer}
                           </Badge>
+                          <span className="text-xs text-slate-400">
+                            Account: {item.account}
+                          </span>
+                          {item.sparkCode && (
+                            <Badge className="text-xs bg-purple-500/10 text-purple-400 border-purple-500/20">
+                              {item.sparkCode}
+                            </Badge>
+                          )}
+                          {isKilled && (
+                            <Badge className="text-xs bg-red-500/20 text-red-400 border-red-500/30">
+                              🔥 Killed
+                            </Badge>
+                          )}
+                          {item.filterType && (
+                            <Badge variant="outline" className="text-xs">
+                              {item.filterType}
+                            </Badge>
+                          )}
+                          {item.geoTargeting?.enabled && (
+                            <Badge className="text-xs bg-blue-500/10 text-blue-400 border-blue-500/20">
+                              🌍 {item.geoTargeting.countries.length} countries
+                            </Badge>
+                          )}
+                          {item.tiktok?.pixelEnabled && (
+                            <Badge className="text-xs bg-green-500/10 text-green-400 border-green-500/20">
+                              📊 Pixel
+                            </Badge>
+                          )}
+                          {item.customUrl && (
+                            <Badge className="text-xs bg-amber-500/10 text-amber-400 border-amber-500/20">
+                              🔗 Custom URL
+                            </Badge>
+                          )}
+                          {item.disableCloaking && (
+                            <Badge className="text-xs bg-orange-500/10 text-orange-400 border-orange-500/20">
+                              ⚠️ No Cloak
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-xs text-slate-500">
+                          {new Date(item.timestamp).toLocaleString()}
+                        </p>
+                        {item.templateName && (
+                          <p className="text-xs text-slate-600 mt-1">
+                            Template: {item.templateName}
+                          </p>
                         )}
                       </div>
-                      <p className="text-xs text-slate-500">
-                        {new Date(item.timestamp).toLocaleString()}
-                      </p>
-                    </div>
-                    <div className="flex gap-1.5">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() =>
-                          copyToClipboard(item.trackingUrl, "Tracking URL")
-                        }
-                        className="h-7 px-2 border-[#2A2D35] hover:bg-[#16181D]"
-                      >
-                        <Copy className="w-3 h-3" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => window.open(item.whitePageUrl, "_blank")}
-                        className="h-7 px-2 border-[#2A2D35] hover:bg-[#16181D]"
-                      >
-                        <ExternalLink className="w-3 h-3" />
-                      </Button>
+                      <div className="flex gap-1.5 flex-shrink-0">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            copyToClipboard(item.trackingUrl, "Tracking URL")
+                          }
+                          className="h-7 px-2 border-[#2A2D35] hover:bg-[#16181D]"
+                        >
+                          <Copy className="w-3 h-3" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => window.open(item.whitePageUrl, "_blank")}
+                          className="h-7 px-2 border-[#2A2D35] hover:bg-[#16181D]"
+                        >
+                          <ExternalLink className="w-3 h-3" />
+                        </Button>
+                        <KillSwitchButton
+                          link={item}
+                          isKilled={isKilled}
+                          onKillStateChange={() => setKillListRefresh((prev) => prev + 1)}
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
 
