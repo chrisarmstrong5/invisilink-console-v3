@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,7 +20,13 @@ import type { CompetitorAd } from "@/lib/config";
 import { Upload, X, Video, Image as ImageIcon, Search } from "lucide-react";
 
 export default function CompetitorsPage() {
-  const [competitors, setCompetitors] = useState<CompetitorAd[]>([]);
+  const [competitors, setCompetitors] = useState<CompetitorAd[]>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem("competitorAds");
+      return saved ? JSON.parse(saved) : [];
+    }
+    return [];
+  });
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -32,14 +38,6 @@ export default function CompetitorsPage() {
   const [niche, setNiche] = useState("");
   const [tags, setTags] = useState("");
   const [notes, setNotes] = useState("");
-
-  // Load from localStorage
-  useEffect(() => {
-    const saved = localStorage.getItem("competitorAds");
-    if (saved) {
-      setCompetitors(JSON.parse(saved));
-    }
-  }, []);
 
   // Save to localStorage
   const saveCompetitors = (ads: CompetitorAd[]) => {

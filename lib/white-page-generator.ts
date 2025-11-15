@@ -10,6 +10,8 @@
  * 6. Update domain usage
  */
 
+import fs from "fs/promises";
+import path from "path";
 import { config } from "./config";
 import { buildHeadScript, buildHeadScript_ParamsOnly, injectHeadScript } from "./bot-detection";
 
@@ -94,9 +96,6 @@ export function buildTrackingUrl(offerKey: string, source: string, sparkCodeId?:
  */
 export async function fetchTemplate(templatePath: string): Promise<string> {
   // Read file from filesystem (server-side only)
-  const fs = require("fs/promises");
-  const path = require("path");
-
   // Template paths in config start with /white-pages/...
   // which maps to public/white-pages/...
   const fullPath = path.join(process.cwd(), "public", templatePath);

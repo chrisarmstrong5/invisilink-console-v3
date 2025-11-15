@@ -26,6 +26,34 @@ export interface RedTrackMetrics {
   roi: number; // ROI percentage
 }
 
+interface RedTrackReportRow {
+  source?: string;
+  s?: string;
+  sub1?: string;
+  sub20?: string;
+  campaign_id?: string;
+  campaign?: string;
+  date?: string;
+  clicks?: string | number;
+  conversions?: string | number;
+  revenue?: string | number;
+  cost?: string | number;
+  cr?: string | number;
+  epc?: string | number;
+  roi?: string | number;
+}
+
+interface LinkHistoryItem {
+  id: string;
+  timestamp: string;
+  account: string;
+  offer?: string;
+}
+
+interface RedTrackReportResponse {
+  data?: RedTrackReportRow[];
+}
+
 export interface CampaignData {
   id: string;
   title: string;
@@ -81,25 +109,26 @@ class RedTrackAPI {
     dateRange: DateRange,
     groupBy: string[] = ["campaign"]
   ): Promise<RedTrackMetrics[]> {
-    const data = await this.request<any>("/report", {
+    const data = await this.request<RedTrackReportResponse | RedTrackReportRow[]>("/report", {
       date_from: dateRange.from,
       date_to: dateRange.to,
       group: groupBy.join(","),
     });
 
     // Transform API response to our metrics format
-    return (data.data || data || []).map((row: any) => ({
+    const rows = Array.isArray(data) ? data : (data.data || []);
+    return rows.map((row: RedTrackReportRow) => ({
       source: row.source || row.s,
       sub1: row.sub1,
       sub20: row.sub20,
       campaign: row.campaign_id || row.campaign,
-      clicks: parseInt(row.clicks) || 0,
-      conversions: parseInt(row.conversions) || 0,
-      revenue: parseFloat(row.revenue) || 0,
-      cost: parseFloat(row.cost) || 0,
-      cvr: parseFloat(row.cr) || 0,
-      epc: parseFloat(row.epc) || 0,
-      roi: parseFloat(row.roi) || 0,
+      clicks: row.clicks ? parseInt(String(row.clicks)) : 0,
+      conversions: row.conversions ? parseInt(String(row.conversions)) : 0,
+      revenue: row.revenue ? parseFloat(String(row.revenue)) : 0,
+      cost: row.cost ? parseFloat(String(row.cost)) : 0,
+      cvr: row.cr ? parseFloat(String(row.cr)) : 0,
+      epc: row.epc ? parseFloat(String(row.epc)) : 0,
+      roi: row.roi ? parseFloat(String(row.roi)) : 0,
     }));
   }
 
@@ -203,7 +232,7 @@ class RedTrackAPI {
     // Group by date
     const dateMap = new Map<string, number>();
 
-    reports.forEach((r: any) => {
+    reports.forEach((r: RedTrackMetrics & { date?: string }) => {
       const date = r.date || formatDate(new Date());
       const revenue = r.revenue || 0;
       dateMap.set(date, (dateMap.get(date) || 0) + revenue);
@@ -246,12 +275,12 @@ class RedTrackAPI {
 
     // Build map of source -> first appearance timestamp (from link generator)
     const sourceFirstSeen = new Map<string, number>();
-    linkHistory.forEach((item: any) => {
-      if (!item.account || !item.offer) return;
+    linkHistory.forEach((item: LinkHistoryItem) => {
+      if (!item.account) return;
 
       // Reconstruct source from offer + account (e.g., "Apple Pay" + "1639" -> "apple1639")
-      const offerKey = Object.entries(config.offers).find(([_, v]) =>
-        (v as any).name === item.offer
+      const offerKey = Object.entries(config.offers).find(([, v]) =>
+        v.name === item.offer
       )?.[0];
       if (!offerKey) return;
 
@@ -325,6 +354,7 @@ class RedTrackAPI {
     });
 
     // Remove firstSeen from return value
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     return campaigns.map(({ firstSeen, ...rest }) => rest);
   }
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,7 +19,13 @@ import { config, type SparkCode } from "@/lib/config";
 import { Upload, X, Video, Image as ImageIcon, TrendingUp, TrendingDown } from "lucide-react";
 
 export default function SparkCodesPage() {
-  const [sparkCodes, setSparkCodes] = useState<SparkCode[]>([]);
+  const [sparkCodes, setSparkCodes] = useState<SparkCode[]>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem("sparkCodes");
+      return saved ? JSON.parse(saved) : [];
+    }
+    return [];
+  });
   const [loading, setLoading] = useState(false);
 
   // Form state
@@ -29,14 +35,6 @@ export default function SparkCodesPage() {
   const [offer, setOffer] = useState("");
   const [platform, setPlatform] = useState<"tiktok" | "facebook">("tiktok");
   const [tags, setTags] = useState("");
-
-  // Load spark codes from localStorage
-  useEffect(() => {
-    const saved = localStorage.getItem("sparkCodes");
-    if (saved) {
-      setSparkCodes(JSON.parse(saved));
-    }
-  }, []);
 
   // Save to localStorage
   const saveSparkCodes = (codes: SparkCode[]) => {

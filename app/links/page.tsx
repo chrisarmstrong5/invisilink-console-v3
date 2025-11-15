@@ -29,7 +29,6 @@ import {
   Trash2,
   ExternalLink,
   Check,
-  Loader2,
 } from "lucide-react";
 
 export default function LinkGenerator() {
@@ -137,14 +136,13 @@ export default function LinkGenerator() {
         throw new Error(errorData.error || "Failed to generate white page");
       }
 
-      const { slug, templateName, commitUrl } = await response.json();
+      const { slug } = await response.json();
 
       setGenerationStatus("Complete!");
 
       // 5. Build URLs
       const domain = config.cloakDomains.find((d) => d.id === selectedDomain);
       const baseCloakUrl = `${domain?.url}/${slug}`;
-      const whitePageUrl = `${config.whitePageProject.deploymentDomain}/${slug}`;
 
       // Submission URL (with ppc=__PLACEMENT__ for bot detection)
       const submissionUrl = `${baseCloakUrl}?${config.headScriptDefaults.placementParam}=${config.headScriptDefaults.botPlacementValue}`;
