@@ -1,46 +1,167 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { config } from "./lib/config";
+import { isAuthenticatedMiddleware } from "./lib/auth";
 
 /**
- * Middleware for Kill Switch
+ * Middleware for Security and Kill Switch
  *
- * Checks if a white page URL is in the kill list and redirects to 404
- * Note: This requires the kill list to be accessible at runtime
+ * Handles:
+ * 1. Domain-based routing (cloak domains vs admin domain)
+ * 2. Admin authentication
+ * 3. Kill switch for burned links
+ * 4. 404 for invalid routes on cloak domains
  */
 
-export function middleware(request: NextRequest) {
-  // Only process white page routes (paths that match the slug pattern)
-  const pathname = request.nextUrl.pathname;
+/**
+ * Check if hostname is an admin domain
+ */
+function isAdminDomain(hostname: string): boolean {
+  const { adminDomain, additionalAdminDomains } = config.security;
 
-  // Match white page patterns like /offer-123-abc123
-  // Skip API routes, static files, and Next.js internals
+  // Remove port for localhost comparison
+  const hostWithoutPort = hostname.split(":")[0];
+
+  // Check primary admin domain
+  if (hostname === adminDomain || hostWithoutPort === adminDomain) {
+    return true;
+  }
+
+  // Check additional admin domains
+  return additionalAdminDomains.some(
+    (domain) => hostname === domain || hostWithoutPort === domain.split(":")[0]
+  );
+}
+
+/**
+ * Check if path is a valid slug pattern
+ * Slugs match: /offer-account-timestamp (e.g., /apple-1639-abc123)
+ */
+function isValidSlugPattern(pathname: string): boolean {
+  // Remove leading slash
+  const slug = pathname.slice(1);
+
+  // Slug pattern: alphanumeric + hyphens, 10-50 chars
+  // Format: offer-account-timestamp
+  const slugRegex = /^[a-z0-9-]{10,50}$/;
+
+  return slugRegex.test(slug);
+}
+
+/**
+ * Check if link is in kill list
+ * In production, this should check Vercel Edge Config or database
+ * For now, we'll skip this check as kill list is in localStorage
+ */
+function isLinkKilled(slug: string): boolean {
+  // TODO: Implement kill list check from Edge Config or database
+  // Currently, kill list is only in localStorage (client-side)
+  // To fully implement:
+  // 1. Use Vercel Edge Config to store kill list
+  // 2. Or use a database like Redis/Upstash
+  // 3. Sync kill list from localStorage to Edge Config via API
+
+  return false; // Placeholder
+}
+
+/**
+ * Admin routes that require authentication
+ */
+const ADMIN_ROUTES = [
+  "/",
+  "/links",
+  "/spark-codes",
+  "/spark-codes-analytics",
+  "/competitors",
+];
+
+const ADMIN_API_ROUTES = [
+  "/api/whitepage/generate",
+  "/api/github/commit",
+  "/api/redtrack",
+  "/api/upload",
+  "/api/kill-list",
+];
+
+export function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+  const hostname = request.headers.get("host") || "";
+
+  // Skip Next.js internals, static files, and auth routes
   if (
-    pathname.startsWith("/api/") ||
     pathname.startsWith("/_next/") ||
     pathname.startsWith("/static/") ||
-    pathname.includes(".")
+    pathname.includes(".") ||
+    pathname.startsWith("/api/auth/") || // Allow auth endpoints
+    pathname === "/login" // Allow login page
   ) {
     return NextResponse.next();
   }
 
-  // TODO: Check kill list from edge config or database
-  // For now, this is a placeholder. To fully implement:
-  // 1. Use Vercel Edge Config to store kill list
-  // 2. Or use a database like Redis/Upstash
-  // 3. Or fetch from GitHub (not recommended for performance)
+  // Determine if this is an admin domain or cloak domain
+  const isAdmin = isAdminDomain(hostname);
 
-  return NextResponse.next();
+  if (isAdmin) {
+    // ===== ADMIN DOMAIN LOGIC =====
+
+    // Check if route requires authentication
+    const requiresAuth =
+      ADMIN_ROUTES.includes(pathname) ||
+      ADMIN_API_ROUTES.some((route) => pathname.startsWith(route));
+
+    if (requiresAuth) {
+      // Check if user is authenticated
+      if (!isAuthenticatedMiddleware(request)) {
+        // Redirect to login page
+        const loginUrl = new URL("/login", request.url);
+        loginUrl.searchParams.set("redirect", pathname);
+        return NextResponse.redirect(loginUrl);
+      }
+    }
+
+    // Allow authenticated admin requests
+    return NextResponse.next();
+  } else {
+    // ===== CLOAK DOMAIN LOGIC =====
+
+    // Block all admin routes on cloak domains
+    if (
+      ADMIN_ROUTES.includes(pathname) ||
+      ADMIN_API_ROUTES.some((route) => pathname.startsWith(route))
+    ) {
+      // Return 404 to hide admin interface
+      return new NextResponse(null, { status: 404 });
+    }
+
+    // Check if this is a valid slug pattern
+    if (!isValidSlugPattern(pathname)) {
+      // Invalid slug or root access → 404
+      return new NextResponse(null, { status: 404 });
+    }
+
+    // Extract slug from pathname
+    const slug = pathname.slice(1);
+
+    // Check kill list
+    if (isLinkKilled(slug)) {
+      // Link is killed → 404
+      return new NextResponse(null, { status: 404 });
+    }
+
+    // Valid slug on cloak domain → allow white page to be served
+    return NextResponse.next();
+  }
 }
 
 export const config = {
   matcher: [
     /*
      * Match all request paths except for the ones starting with:
-     * - api (API routes)
+     * - api/auth (authentication endpoints)
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      */
-    "/((?!api|_next/static|_next/image|favicon.ico).*)",
+    "/((?!api/auth|_next/static|_next/image|favicon.ico).*)",
   ],
 };

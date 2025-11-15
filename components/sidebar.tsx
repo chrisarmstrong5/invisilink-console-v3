@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Link2, Sparkles, Eye } from "lucide-react";
+import { Home, Link2, Sparkles, Eye, BarChart3 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navigation = [
   { name: "Dashboard", href: "/", icon: Home },
   { name: "Link Generator", href: "/links", icon: Link2 },
   { name: "Spark Codes", href: "/spark-codes", icon: Sparkles },
+  { name: "Spark Analytics", href: "/spark-codes-analytics", icon: BarChart3 },
   { name: "Competitor Spy", href: "/competitors", icon: Eye },
 ];
 

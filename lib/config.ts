@@ -146,6 +146,17 @@ export const config = {
     deploymentDomain: "https://affiliate-cloaking-v3.vercel.app",
     repoPath: "white-pages/deploy-root",
   },
+  // Admin domain configuration for security
+  security: {
+    // The admin domain where the console is accessed
+    // All other domains are treated as cloak domains
+    adminDomain: "affiliate-cloaking-v3.vercel.app",
+    // Alternative admin domains (e.g., custom domain, production URL)
+    additionalAdminDomains: [
+      "invisilink-console-v3.vercel.app",
+      "localhost:3000",
+    ],
+  },
   offers: {
     apple: { name: "Apple Pay", code: "AP" },
     cashapp: { name: "Cash App", code: "CA" },

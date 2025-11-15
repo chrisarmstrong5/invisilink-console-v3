@@ -16,7 +16,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { config, type SparkCode } from "@/lib/config";
-import { Upload, X, Video, Image as ImageIcon, TrendingUp, TrendingDown } from "lucide-react";
+import { Upload, X, Video, Image as ImageIcon, TrendingUp, TrendingDown, BarChart3 } from "lucide-react";
+import Link from "next/link";
 
 export default function SparkCodesPage() {
   const [sparkCodes, setSparkCodes] = useState<SparkCode[]>([]);
@@ -152,11 +153,19 @@ export default function SparkCodesPage() {
   return (
     <div className="min-h-screen bg-background p-8">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground">Spark Code Database</h1>
-        <p className="text-sm text-muted-foreground">
-          Upload and manage TikTok/Facebook Spark Codes with creative assets
-        </p>
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Spark Code Database</h1>
+          <p className="text-sm text-muted-foreground">
+            Upload and manage TikTok/Facebook Spark Codes with creative assets
+          </p>
+        </div>
+        <Link href="/spark-codes-analytics">
+          <Button variant="outline" className="gap-2">
+            <BarChart3 className="h-4 w-4" />
+            View Analytics
+          </Button>
+        </Link>
       </div>
 
       {/* Upload Form */}

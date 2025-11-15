@@ -77,10 +77,39 @@ pnpm install
 
 3. Set up environment variables
 
-Create `.env.local`:
-```env
-GITHUB_TOKEN=your_github_personal_access_token
+Copy the example file and fill in your values:
+```bash
+cp .env.local.example .env.local
 ```
+
+Required environment variables:
+```env
+# GitHub Integration (required)
+GITHUB_TOKEN=your_github_personal_access_token
+
+# Vercel Blob Storage (required for media uploads)
+BLOB_READ_WRITE_TOKEN=vercel_blob_rw_xxxxx
+
+# Admin Authentication (required)
+ADMIN_PASSWORD=your_secure_password
+```
+
+**Important Setup Steps:**
+
+a. **GitHub Token:**
+   - Go to https://github.com/settings/tokens/new
+   - Select scopes: `repo` (full control of private repositories)
+   - Generate token and copy to `.env.local`
+
+b. **Vercel Blob Storage:**
+   - Go to Vercel Dashboard → Storage → Create Blob Store
+   - Or visit: https://vercel.com/dashboard/stores
+   - Copy the `BLOB_READ_WRITE_TOKEN` from store settings
+   - Add to `.env.local` and Vercel environment variables
+
+c. **Admin Password:**
+   - Choose a strong password to protect the admin console
+   - This prevents unauthorized access to link generation interface
 
 4. Update configuration
 
