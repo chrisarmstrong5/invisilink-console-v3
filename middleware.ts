@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { config } from "./lib/config";
+import { config as appConfig } from "./lib/config";
 import { isAuthenticatedMiddleware } from "./lib/auth";
 
 /**
@@ -17,7 +17,7 @@ import { isAuthenticatedMiddleware } from "./lib/auth";
  * Check if hostname is an admin domain
  */
 function isAdminDomain(hostname: string): boolean {
-  const { adminDomain, additionalAdminDomains } = config.security;
+  const { adminDomain, additionalAdminDomains } = appConfig.security;
 
   // Remove port for localhost comparison
   const hostWithoutPort = hostname.split(":")[0];
