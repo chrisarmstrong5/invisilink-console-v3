@@ -219,6 +219,38 @@ export const config = {
       additionalPatterns: ["bytedance", "tiktok", "musically"],
     },
   },
+  // Facebook Platform Configuration (NEW)
+  facebook: {
+    // Facebook cloak domains (separate from TikTok domains)
+    domains: [
+      // Add your Facebook domains here
+      // Example: { id: "fb-domain-1", name: "FB Domain 1", url: "https://yourdomain.com", status: "active" }
+    ] as CloakDomain[],
+    defaultDomain: "", // Will be set when domains are added
+    pixelDefaults: {
+      enabled: false,
+      pixelId: "", // Set your Facebook Pixel ID
+    },
+    appDefaults: {
+      appId: "", // Set your Facebook App ID
+    },
+    trackingModes: {
+      direct: {
+        enabled: true,
+        description: "FB-compliant direct tracking (no redirects)",
+      },
+      redirect: {
+        enabled: true,
+        description: "Redirect tracking (for testing only, may get banned)",
+      },
+      defaultMode: "direct" as "direct" | "redirect",
+    },
+    // Facebook Conversion API (CAPI) - Optional for Phase 3
+    capi: {
+      enabled: false,
+      accessToken: "", // FB CAPI access token
+    },
+  },
   killSwitch: {
     enabled: true,
     storageKey: "affiliate-kill-list",
@@ -270,6 +302,7 @@ export type LinkHistoryItem = {
   trackingUrl: string;
   whitePageUrl: string;
   campaignName: string;
+  platform?: "tiktok" | "facebook"; // NEW: Platform support
   // V2 features
   customUrl?: string;
   filterType?: "params-only" | "advanced";
@@ -282,6 +315,12 @@ export type LinkHistoryItem = {
     pixelId?: string;
     browserRedirectEnabled: boolean;
     strictBotDetectionEnabled: boolean;
+  };
+  // NEW: Facebook configuration
+  facebook?: {
+    pixelId?: string;
+    appId?: string;
+    trackingMode?: "direct" | "redirect";
   };
   disableCloaking?: boolean;
   isKilled?: boolean;
@@ -302,4 +341,11 @@ export type GeoTargetingCountry = {
   code: string;
   name: string;
   region: "english-speaking" | "european" | "other";
+};
+
+export type CloakDomain = {
+  id: string;
+  name: string;
+  url: string;
+  status: "active" | "inactive" | "burned";
 };

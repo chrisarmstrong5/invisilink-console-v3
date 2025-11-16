@@ -110,7 +110,7 @@ export class MigrationService {
       campaign_name: item.campaignName,
       template_name: item.templateName,
       spark_code_id: item.sparkCode || undefined,
-      platform: (item.platform as "tiktok" | "facebook") || "tiktok",
+      platform: (item.platform || "tiktok") as "tiktok" | "facebook",
       custom_url: item.customUrl,
       filter_type: item.filterType || "params-only",
       disable_cloaking: item.disableCloaking || false,
