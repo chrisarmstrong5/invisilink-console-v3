@@ -134,11 +134,11 @@ export default function PerformancePage() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-4 md:p-6 space-y-4 md:space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold mb-2">Link Performance</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-2xl md:text-3xl font-bold mb-2">Link Performance</h1>
+        <p className="text-sm md:text-base text-muted-foreground">
           Track ROI, profit, and performance across all your links
         </p>
       </div>
@@ -256,17 +256,100 @@ export default function PerformancePage() {
 
       {/* Performance Table */}
       <Card>
-        <div className="overflow-x-auto">
-          {loading ? (
-            <div className="flex items-center justify-center p-12">
-              <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+        {loading ? (
+          <div className="flex items-center justify-center p-12">
+            <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+          </div>
+        ) : filteredLinks.length === 0 ? (
+          <div className="text-center p-12 text-muted-foreground">
+            No links found. Generate some links and they'll appear here once they get traffic.
+          </div>
+        ) : (
+          <>
+            {/* Mobile Card View */}
+            <div className="md:hidden space-y-4 p-4">
+              {filteredLinks.map((link) => (
+                <Card key={link.slug} className={`p-4 ${link.isKilled ? "opacity-50 bg-red-950/20" : ""}`}>
+                  {/* Header */}
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex-1">
+                      <div className="font-mono text-sm font-semibold mb-1">{link.slug}</div>
+                      <div className="text-sm font-medium mb-1">{link.offerName}</div>
+                      <div className="text-xs text-muted-foreground">{link.accountNumber}</div>
+                      {link.sparkCodeId && (
+                        <div className="text-xs text-muted-foreground mt-1">
+                          SC: {link.sparkCodeId}
+                        </div>
+                      )}
+                    </div>
+                    <Badge variant={link.platform === "tiktok" ? "default" : "secondary"}>
+                      {link.platform}
+                    </Badge>
+                  </div>
+
+                  {/* Metrics Grid */}
+                  <div className="grid grid-cols-2 gap-3 mb-3 border-t pt-3">
+                    <div>
+                      <p className="text-xs text-muted-foreground">Clicks</p>
+                      <p className="text-sm font-semibold">{link.clicks.toLocaleString()}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Conv</p>
+                      <p className="text-sm font-semibold">{link.conversions}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">CVR</p>
+                      <p className="text-sm font-semibold">{link.cvr.toFixed(2)}%</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">EPC</p>
+                      <p className="text-sm font-semibold">${link.epc.toFixed(2)}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Revenue</p>
+                      <p className="text-sm font-semibold text-green-400">${link.revenue.toFixed(2)}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Spend</p>
+                      <p className="text-sm font-semibold text-red-400">${link.spend.toFixed(2)}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Profit</p>
+                      <p className={`text-sm font-semibold ${getProfitColor(link.profit)}`}>
+                        ${link.profit.toFixed(2)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">ROI</p>
+                      <p className={`text-sm font-semibold ${getROIColor(link.roi)}`}>
+                        {link.roi.toFixed(0)}%
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Action Button */}
+                  <div className="border-t pt-3">
+                    {link.isKilled ? (
+                      <Badge variant="destructive" className="w-full justify-center">Killed</Badge>
+                    ) : (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="w-full h-9 gap-2 text-red-600 hover:bg-red-50 hover:text-red-700"
+                        onClick={() => killLink(link.slug, link.offerName)}
+                      >
+                        <Skull className="h-4 w-4" />
+                        Kill Link
+                      </Button>
+                    )}
+                  </div>
+                </Card>
+              ))}
             </div>
-          ) : filteredLinks.length === 0 ? (
-            <div className="text-center p-12 text-muted-foreground">
-              No links found. Generate some links and they'll appear here once they get traffic.
-            </div>
-          ) : (
-            <Table>
+
+            {/* Desktop Table View */}
+            <div className="hidden md:block overflow-x-auto">
+              <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Link</TableHead>
@@ -343,8 +426,9 @@ export default function PerformancePage() {
                 ))}
               </TableBody>
             </Table>
-          )}
-        </div>
+            </div>
+          </>
+        )}
       </Card>
 
       {/* Footer Stats */}
