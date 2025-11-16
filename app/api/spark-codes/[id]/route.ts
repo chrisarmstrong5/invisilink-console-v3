@@ -3,10 +3,11 @@ import { sparkCodesRepository } from "@/lib/db/repositories/spark-codes";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const sparkCode = await sparkCodesRepository.findById(params.id);
+    const { id } = await params;
+    const sparkCode = await sparkCodesRepository.findById(id);
 
     if (!sparkCode) {
       return NextResponse.json(
@@ -27,11 +28,12 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const body = await request.json();
-    const sparkCode = await sparkCodesRepository.update(params.id, body);
+    const sparkCode = await sparkCodesRepository.update(id, body);
 
     if (!sparkCode) {
       return NextResponse.json(
@@ -52,10 +54,11 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    await sparkCodesRepository.delete(params.id);
+    const { id } = await params;
+    await sparkCodesRepository.delete(id);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Failed to delete spark code:", error);

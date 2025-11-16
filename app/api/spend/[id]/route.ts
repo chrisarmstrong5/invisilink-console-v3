@@ -3,10 +3,11 @@ import { db } from "@/lib/db/client";
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    await db.query("DELETE FROM spend_tracking WHERE id = $1", [params.id]);
+    const { id } = await params;
+    await db.query("DELETE FROM spend_tracking WHERE id = $1", [id]);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Failed to delete spend record:", error);

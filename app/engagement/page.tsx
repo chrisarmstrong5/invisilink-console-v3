@@ -12,12 +12,12 @@ import { TrendingUp, Zap, Clock, ExternalLink } from "lucide-react";
 import { config } from "@/lib/config";
 
 interface BoostHistory {
-  id: string;
+  id?: string;
   tiktokLink: string;
   likes: number;
   saves: number;
   views?: number;
-  date: string;
+  date?: string;
   orderIds: number[];
   cost?: number;
 }
@@ -275,10 +275,12 @@ export default function EngagementBoostPage() {
                         <span className="truncate">{boost.tiktokLink}</span>
                         <ExternalLink className="w-3 h-3 shrink-0" />
                       </a>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {new Date(boost.date).toLocaleDateString()} at{" "}
-                        {new Date(boost.date).toLocaleTimeString()}
-                      </p>
+                      {boost.date && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {new Date(boost.date).toLocaleDateString()} at{" "}
+                          {new Date(boost.date).toLocaleTimeString()}
+                        </p>
+                      )}
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-2 text-xs border-t pt-2">
@@ -315,11 +317,17 @@ export default function EngagementBoostPage() {
                   {boostHistory.map((boost) => (
                     <tr key={boost.id} className="text-sm">
                       <td className="py-3 text-muted-foreground">
-                        {new Date(boost.date).toLocaleDateString()}
-                        <br />
-                        <span className="text-xs">
-                          {new Date(boost.date).toLocaleTimeString()}
-                        </span>
+                        {boost.date ? (
+                          <>
+                            {new Date(boost.date).toLocaleDateString()}
+                            <br />
+                            <span className="text-xs">
+                              {new Date(boost.date).toLocaleTimeString()}
+                            </span>
+                          </>
+                        ) : (
+                          "-"
+                        )}
                       </td>
                       <td className="py-3">
                         <a

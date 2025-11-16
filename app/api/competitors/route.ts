@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Handle single ad creation
-    const snakeCasedBody = objectToSnakeCase(body);
+    const snakeCasedBody = objectToSnakeCase(body) as any;
     const ad = await competitorAdsRepository.create(snakeCasedBody);
     const camelCasedData = objectToCamelCase(ad);
     return NextResponse.json({ success: true, data: camelCasedData });

@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Handle single spark code creation - transform to snake_case
-    const snakeCasedBody = objectToSnakeCase(body);
+    const snakeCasedBody = objectToSnakeCase(body) as any;
     const sparkCode = await sparkCodesRepository.create(snakeCasedBody);
     // Transform back to camelCase for response
     const camelCasedData = objectToCamelCase(sparkCode);

@@ -3,10 +3,11 @@ import { competitorAdsRepository } from "@/lib/db/repositories/competitors";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const ad = await competitorAdsRepository.findById(params.id);
+    const { id } = await params;
+    const ad = await competitorAdsRepository.findById(id);
 
     if (!ad) {
       return NextResponse.json(
@@ -27,11 +28,12 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const body = await request.json();
-    const ad = await competitorAdsRepository.update(params.id, body);
+    const ad = await competitorAdsRepository.update(id, body);
 
     if (!ad) {
       return NextResponse.json(
@@ -52,10 +54,11 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    await competitorAdsRepository.delete(params.id);
+    const { id } = await params;
+    await competitorAdsRepository.delete(id);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Failed to delete competitor ad:", error);

@@ -19,7 +19,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const snakeCasedBody = objectToSnakeCase(body);
+    const snakeCasedBody = objectToSnakeCase(body) as any;
     const boost = await boostHistoryRepository.create(snakeCasedBody);
     const camelCasedData = objectToCamelCase(boost);
     return NextResponse.json({ success: true, data: camelCasedData });

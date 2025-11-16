@@ -19,7 +19,11 @@ interface ImportResult {
   }>;
 }
 
-export function CSVSpendImporter() {
+interface CSVSpendImporterProps {
+  onImportComplete?: () => void;
+}
+
+export function CSVSpendImporter({ onImportComplete }: CSVSpendImporterProps = {}) {
   const [status, setStatus] = useState<"idle" | "processing" | "success" | "error">("idle");
   const [result, setResult] = useState<ImportResult | null>(null);
   const [error, setError] = useState<string>("");
@@ -55,6 +59,7 @@ export function CSVSpendImporter() {
         setStatus("success");
         setResult(data);
         toast.success(`Imported ${data.imported} spend records ($${data.totalSpend.toFixed(2)} total)`);
+        onImportComplete?.();
       } else {
         setStatus("error");
         setError(data.error || "Import failed");

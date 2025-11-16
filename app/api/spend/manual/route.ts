@@ -23,14 +23,14 @@ export async function POST(request: NextRequest) {
 
     // Create spend record
     await spendRepository.upsert({
-      sourceType: "account",
-      sourceId: accountId,
+      source_type: "account",
+      source_id: accountId,
       date,
       amount,
       platform,
-      accountId,
-      campaignName,
-      importMethod: "manual",
+      account_id: accountId,
+      campaign_name: campaignName,
+      import_method: "manual",
       notes,
     });
 

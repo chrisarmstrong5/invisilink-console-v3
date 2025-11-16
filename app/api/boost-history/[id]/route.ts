@@ -3,10 +3,11 @@ import { boostHistoryRepository } from "@/lib/db/repositories/boost-history";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const boost = await boostHistoryRepository.findById(params.id);
+    const { id } = await params;
+    const boost = await boostHistoryRepository.findById(id);
 
     if (!boost) {
       return NextResponse.json(
@@ -27,10 +28,11 @@ export async function GET(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    await boostHistoryRepository.delete(params.id);
+    const { id } = await params;
+    await boostHistoryRepository.delete(id);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Failed to delete boost history:", error);
