@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { MobileUpload } from "@/components/mobile/mobile-upload";
 import {
   Select,
   SelectContent,
@@ -151,11 +152,11 @@ export default function SparkCodesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background p-8">
+    <div className="min-h-screen bg-background p-4 md:p-8">
       {/* Header */}
-      <div className="mb-8 flex items-center justify-between">
+      <div className="mb-6 md:mb-8 flex items-center justify-between flex-col md:flex-row gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Spark Code Database</h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">Spark Code Database</h1>
           <p className="text-sm text-muted-foreground">
             Upload and manage TikTok/Facebook Spark Codes with creative assets
           </p>
@@ -169,8 +170,8 @@ export default function SparkCodesPage() {
       </div>
 
       {/* Upload Form */}
-      <Card className="mb-8 p-6 shadow-sm">
-        <h3 className="mb-6 text-lg font-semibold text-foreground">Add New Spark Code</h3>
+      <Card className="mb-6 md:mb-8 p-4 md:p-6 shadow-sm">
+        <h3 className="mb-4 md:mb-6 text-lg font-semibold text-foreground">Add New Spark Code</h3>
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           {/* Content Type */}
@@ -267,39 +268,63 @@ export default function SparkCodesPage() {
           <Label className="mb-2 block text-sm font-medium text-foreground">
             Upload {contentType === "video" ? "Video/Screenshot" : "3 Slides"}
           </Label>
-          <div
-            {...getRootProps()}
-            className={`cursor-pointer rounded-lg border-2 border-dashed p-8 text-center transition-colors ${
-              isDragActive ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
-            }`}
-          >
-            <input {...getInputProps()} />
-            <Upload className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-            <p className="mb-2 text-sm font-medium text-foreground">
-              {isDragActive ? "Drop files here" : "Drag & drop files here, or click to browse"}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              {contentType === "video" ? "1 video or screenshot" : "Up to 20 images for slideshow"}
-            </p>
+
+          {/* Desktop Dropzone */}
+          <div className="hidden md:block">
+            <div
+              {...getRootProps()}
+              className={`cursor-pointer rounded-lg border-2 border-dashed p-8 text-center transition-colors ${
+                isDragActive ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
+              }`}
+            >
+              <input {...getInputProps()} />
+              <Upload className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+              <p className="mb-2 text-sm font-medium text-foreground">
+                {isDragActive ? "Drop files here" : "Drag & drop files here, or click to browse"}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {contentType === "video" ? "1 video or screenshot" : "Up to 20 images for slideshow"}
+              </p>
+            </div>
+
+            {/* Preview uploaded files - Desktop */}
+            {mediaFiles.length > 0 && (
+              <div className="mt-4 grid grid-cols-3 gap-4">
+                {mediaFiles.map((file, idx) => (
+                  <div key={idx} className="relative rounded-lg border p-2">
+                    <p className="truncate text-xs text-foreground">{file.name}</p>
+                    <p className="text-xs text-muted-foreground">{(file.size / 1024).toFixed(1)} KB</p>
+                    <button
+                      onClick={() => setMediaFiles(mediaFiles.filter((_, i) => i !== idx))}
+                      className="absolute -right-2 -top-2 rounded-full bg-red-500 p-1 text-white hover:bg-red-600"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
-          {/* Preview uploaded files */}
-          {mediaFiles.length > 0 && (
-            <div className="mt-4 grid grid-cols-3 gap-4">
-              {mediaFiles.map((file, idx) => (
-                <div key={idx} className="relative rounded-lg border p-2">
-                  <p className="truncate text-xs text-foreground">{file.name}</p>
-                  <p className="text-xs text-muted-foreground">{(file.size / 1024).toFixed(1)} KB</p>
-                  <button
-                    onClick={() => setMediaFiles(mediaFiles.filter((_, i) => i !== idx))}
-                    className="absolute -right-2 -top-2 rounded-full bg-red-500 p-1 text-white hover:bg-red-600"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
+          {/* Mobile Upload */}
+          <div className="md:hidden">
+            <MobileUpload
+              accept={contentType === "video" ? "image/*,video/*" : "image/*"}
+              multiple={contentType === "slideshow"}
+              maxSize={50 * 1024 * 1024}
+              onUpload={async (files) => {
+                const maxFiles = contentType === "video" ? 1 : 20;
+                if (files.length > maxFiles) {
+                  toast.error(`Maximum ${maxFiles} file(s) for ${contentType}`);
+                  return;
+                }
+                setMediaFiles(files);
+                toast.success(`${files.length} file(s) selected`);
+              }}
+              showCamera
+              label={contentType === "video" ? "Upload Video/Screenshot" : "Upload Slides"}
+            />
+          </div>
         </div>
 
         <Button onClick={handleAddSparkCode} disabled={loading} className="mt-6 w-full bg-primary hover:bg-primary/90">
