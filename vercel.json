@@ -9,5 +9,11 @@
         }
       ]
     }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron/sync-redtrack",
+      "schedule": "*/30 * * * *"
+    }
   ]
 }
