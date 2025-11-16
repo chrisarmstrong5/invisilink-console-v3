@@ -518,9 +518,29 @@ export default function SparkCodesPage() {
                         variant="outline"
                         size="sm"
                         className="w-full h-8 text-xs gap-2"
-                        onClick={() => {
-                          toast.success(`Adding ${sc.engagementSettings?.likes} likes, ${sc.engagementSettings?.saves} saves to TikTok`);
-                          // TODO: Integrate with SMM panel API
+                        onClick={async () => {
+                          try {
+                            const response = await fetch("/api/smm/boost", {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({
+                                tiktokLink: sc.tiktokLink,
+                                likes: sc.engagementSettings?.likes,
+                                saves: sc.engagementSettings?.saves,
+                              }),
+                            });
+
+                            const data = await response.json();
+
+                            if (response.ok && data.success) {
+                              toast.success(`Engagement boost order placed! Orders: ${data.orders.join(", ")}`);
+                            } else {
+                              toast.error(data.error || data.message || "Failed to boost engagement");
+                            }
+                          } catch (error) {
+                            toast.error("Failed to boost engagement");
+                            console.error(error);
+                          }
                         }}
                       >
                         <TrendingUp className="h-3 w-3" />

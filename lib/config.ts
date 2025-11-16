@@ -251,6 +251,37 @@ export const config = {
       accessToken: "", // FB CAPI access token
     },
   },
+  smmPanel: {
+    // Primary provider
+    provider: "smmfollows" as "smmfollows" | "jap",
+    smmfollows: {
+      apiUrl: "https://smmfollows.com/api/v2",
+      apiKey: process.env.SMMFOLLOWS_API_KEY || "",
+      services: {
+        tiktok: {
+          likes: "", // Service ID for TikTok likes (get from panel)
+          saves: "", // Service ID for TikTok saves (get from panel)
+          views: "", // Service ID for TikTok views (get from panel)
+        },
+      },
+    },
+    jap: {
+      apiUrl: "https://justanotherpanel.com/api/v2",
+      apiKey: process.env.JAP_API_KEY || "",
+      services: {
+        tiktok: {
+          likes: "", // Service ID for TikTok likes (get from panel)
+          saves: "", // Service ID for TikTok saves (get from panel)
+          views: "", // Service ID for TikTok views (get from panel)
+        },
+      },
+    },
+    defaults: {
+      likes: 1900,
+      saves: 180,
+      views: 0, // Optional: can add views too
+    },
+  },
   killSwitch: {
     enabled: true,
     storageKey: "affiliate-kill-list",
