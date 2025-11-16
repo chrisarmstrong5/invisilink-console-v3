@@ -18,13 +18,21 @@ export function MobileHeader({ onMenuClick }: MobileHeaderProps) {
       const response = await fetch("/api/cron/sync-redtrack", {
         method: "POST",
       });
+
+      const data = await response.json();
+
       if (response.ok) {
-        toast.success("Synced RedTrack data");
+        const total = data.synced?.total || 0;
+        toast.success(`Synced ${total} metrics from RedTrack`);
       } else {
-        toast.error("Sync failed");
+        // Show more detailed error message
+        const errorMsg = data.error || data.errors?.[0] || "Sync failed";
+        toast.error(`RedTrack sync failed: ${errorMsg}`);
+        console.error("[Sync Error]", data);
       }
     } catch (error) {
-      toast.error("Sync error");
+      toast.error("Network error during sync");
+      console.error("[Sync Error]", error);
     } finally {
       setSyncing(false);
     }
