@@ -10,10 +10,10 @@ import { linksRepository } from "@/lib/db/repositories";
 
 export async function POST(
   request: Request,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const { slug } = params;
+    const { slug } = await params;
     const { reason } = await request.json();
 
     console.log(`[Kill Link] Killing link: ${slug}`);
