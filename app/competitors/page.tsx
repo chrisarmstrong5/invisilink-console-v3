@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { MobileUpload } from "@/components/mobile/mobile-upload";
 import { toast } from "sonner";
 import type { CompetitorAd } from "@/lib/config";
 import { Upload, X, Video, Image as ImageIcon, Search } from "lucide-react";
@@ -178,17 +179,17 @@ export default function CompetitorsPage() {
   });
 
   return (
-    <div className="min-h-screen bg-background p-8">
+    <div className="min-h-screen bg-background p-4 md:p-8">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground">Competitor Spy</h1>
+      <div className="mb-6 md:mb-8">
+        <h1 className="text-2xl md:text-3xl font-bold text-foreground">Competitor Spy</h1>
         <p className="text-sm text-muted-foreground">
           Store and organize competitor ads for research and inspiration
         </p>
       </div>
 
       {/* Upload Form */}
-      <Card className="mb-8 p-6 shadow-sm">
+      <Card className="mb-6 md:mb-8 p-4 md:p-6 shadow-sm">
         <h3 className="mb-6 text-lg font-semibold text-foreground">Add Competitor Ad</h3>
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -267,82 +268,127 @@ export default function CompetitorsPage() {
           </div>
         </div>
 
-        {/* File Upload Dropzone */}
+        {/* File Upload - Mobile Optimized */}
         <div className="mt-6">
           <Label className="mb-2 block text-sm font-medium text-foreground">
             Upload {contentType === "video" ? "Video/Screenshot" : "3 Slides"}
           </Label>
-          <div
-            {...getRootProps()}
-            className={`cursor-pointer rounded-lg border-2 border-dashed p-8 text-center transition-colors ${
-              isDragActive ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
-            }`}
-          >
-            <input {...getInputProps()} />
-            <Upload className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-            <p className="mb-2 text-sm font-medium text-foreground">
-              {isDragActive ? "Drop files here" : "Drag & drop files here, or click to browse"}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              {contentType === "video" ? "1 video or screenshot" : "Exactly 3 images for slideshow"}
-            </p>
+
+          {/* Desktop Dropzone */}
+          <div className="hidden md:block">
+            <div
+              {...getRootProps()}
+              className={`cursor-pointer rounded-lg border-2 border-dashed p-8 text-center transition-colors ${
+                isDragActive ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
+              }`}
+            >
+              <input {...getInputProps()} />
+              <Upload className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+              <p className="mb-2 text-sm font-medium text-foreground">
+                {isDragActive ? "Drop files here" : "Drag & drop files here, or click to browse"}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {contentType === "video" ? "1 video or screenshot" : "Exactly 3 images for slideshow"}
+              </p>
+            </div>
+
+            {/* Preview */}
+            {mediaFiles.length > 0 && (
+              <div className="mt-4 grid grid-cols-3 gap-4">
+                {mediaFiles.map((file, idx) => (
+                  <div key={idx} className="relative rounded-lg border p-2">
+                    <p className="truncate text-xs text-foreground">{file.name}</p>
+                    <p className="text-xs text-muted-foreground">{(file.size / 1024).toFixed(1)} KB</p>
+                    <button
+                      onClick={() => setMediaFiles(mediaFiles.filter((_, i) => i !== idx))}
+                      className="absolute -right-2 -top-2 rounded-full bg-red-500 p-1 text-white hover:bg-red-600"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
-          {/* Preview */}
-          {mediaFiles.length > 0 && (
-            <div className="mt-4 grid grid-cols-3 gap-4">
-              {mediaFiles.map((file, idx) => (
-                <div key={idx} className="relative rounded-lg border p-2">
-                  <p className="truncate text-xs text-foreground">{file.name}</p>
-                  <p className="text-xs text-muted-foreground">{(file.size / 1024).toFixed(1)} KB</p>
+          {/* Mobile Upload */}
+          <div className="md:hidden">
+            <MobileUpload
+              accept={contentType === "video" ? "image/*,video/*" : "image/*"}
+              multiple={contentType === "slideshow"}
+              maxSize={50 * 1024 * 1024}
+              onUpload={async (files) => {
+                const maxFiles = contentType === "video" ? 1 : 3;
+                if (files.length > maxFiles) {
+                  toast.error(`Maximum ${maxFiles} file${maxFiles > 1 ? "s" : ""} for ${contentType}`);
+                  return;
+                }
+                setMediaFiles(files);
+                toast.success(`${files.length} file(s) selected`);
+              }}
+              showCamera
+              label={contentType === "video" ? "Upload Video/Screenshot" : "Upload 3 Slides"}
+            />
+          </div>
+        </div>
+
+        {/* Lander Screenshot Upload (Optional) - Mobile Optimized */}
+        <div className="mt-6">
+          <Label className="mb-2 block text-sm font-medium text-foreground">
+            Landing Page Screenshot (Optional)
+          </Label>
+
+          {/* Desktop Dropzone */}
+          <div className="hidden md:block">
+            <div
+              {...getLanderRootProps()}
+              className={`cursor-pointer rounded-lg border-2 border-dashed p-6 text-center transition-colors ${
+                isLanderDragActive ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
+              }`}
+            >
+              <input {...getLanderInputProps()} />
+              <Upload className="mx-auto mb-3 h-10 w-10 text-muted-foreground" />
+              <p className="mb-2 text-sm font-medium text-foreground">
+                {isLanderDragActive ? "Drop here" : "Upload lander screenshot (optional)"}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                1 image - screenshot of the landing page this ad links to
+              </p>
+            </div>
+
+            {/* Preview lander screenshot */}
+            {landerScreenshot && (
+              <div className="mt-4">
+                <div className="relative rounded-lg border p-2">
+                  <p className="truncate text-xs text-foreground">{landerScreenshot.name}</p>
+                  <p className="text-xs text-muted-foreground">{(landerScreenshot.size / 1024).toFixed(1)} KB</p>
                   <button
-                    onClick={() => setMediaFiles(mediaFiles.filter((_, i) => i !== idx))}
+                    onClick={() => setLanderScreenshot(null)}
                     className="absolute -right-2 -top-2 rounded-full bg-red-500 p-1 text-white hover:bg-red-600"
                   >
                     <X className="h-3 w-3" />
                   </button>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Lander Screenshot Upload (Optional) */}
-        <div className="mt-6">
-          <Label className="mb-2 block text-sm font-medium text-foreground">
-            Landing Page Screenshot (Optional)
-          </Label>
-          <div
-            {...getLanderRootProps()}
-            className={`cursor-pointer rounded-lg border-2 border-dashed p-6 text-center transition-colors ${
-              isLanderDragActive ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
-            }`}
-          >
-            <input {...getLanderInputProps()} />
-            <Upload className="mx-auto mb-3 h-10 w-10 text-muted-foreground" />
-            <p className="mb-2 text-sm font-medium text-foreground">
-              {isLanderDragActive ? "Drop here" : "Upload lander screenshot (optional)"}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              1 image - screenshot of the landing page this ad links to
-            </p>
+              </div>
+            )}
           </div>
 
-          {/* Preview lander screenshot */}
-          {landerScreenshot && (
-            <div className="mt-4">
-              <div className="relative rounded-lg border p-2">
-                <p className="truncate text-xs text-foreground">{landerScreenshot.name}</p>
-                <p className="text-xs text-muted-foreground">{(landerScreenshot.size / 1024).toFixed(1)} KB</p>
-                <button
-                  onClick={() => setLanderScreenshot(null)}
-                  className="absolute -right-2 -top-2 rounded-full bg-red-500 p-1 text-white hover:bg-red-600"
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              </div>
-            </div>
-          )}
+          {/* Mobile Upload */}
+          <div className="md:hidden">
+            <MobileUpload
+              accept="image/*"
+              multiple={false}
+              maxSize={10 * 1024 * 1024}
+              onUpload={async (files) => {
+                if (files.length > 0) {
+                  setLanderScreenshot(files[0]);
+                  toast.success("Landing page screenshot selected");
+                }
+              }}
+              showCamera
+              label="Upload Lander Screenshot"
+            />
+          </div>
         </div>
 
         <Button onClick={handleAddAd} disabled={loading} className="mt-6 w-full bg-primary hover:bg-primary/90">
