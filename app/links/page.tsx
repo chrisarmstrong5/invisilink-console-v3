@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { SparkCodeManager } from "@/components/spark-code-manager";
 import { GeoTargetingSelector } from "@/components/geo-targeting-selector";
 import { TikTokConfig } from "@/components/tiktok-config";
+import { FacebookConfig } from "@/components/facebook-config";
 import { AdvancedLinkOptions } from "@/components/advanced-link-options";
 import { KillSwitchButton } from "@/components/kill-switch-button";
 import { toast } from "sonner";
@@ -66,6 +67,17 @@ export default function LinkGenerator() {
   const [tiktokBrowserRedirect, setTiktokBrowserRedirect] = useState(false);
   const [tiktokStrictBotDetection, setTiktokStrictBotDetection] =
     useState(false);
+
+  // Facebook State
+  const [facebookPixelId, setFacebookPixelId] = useState<string>(
+    config.facebook?.pixelDefaults?.pixelId || ""
+  );
+  const [facebookAppId, setFacebookAppId] = useState<string>(
+    config.facebook?.appDefaults?.appId || ""
+  );
+  const [facebookTrackingMode, setFacebookTrackingMode] = useState<"direct" | "redirect">(
+    config.facebook?.trackingModes?.defaultMode || "direct"
+  );
 
   // UI State
   const [showHistory, setShowHistory] = useState(false);
@@ -151,6 +163,7 @@ export default function LinkGenerator() {
           trackingUrl: customUrl || trackingUrl, // Use custom URL if provided
           filterType: botFiltering === "params" ? "params-only" : "advanced",
           domain: selectedDomain,
+          platform,
           // V2 Features
           customUrl,
           disableCloaking,
@@ -160,12 +173,17 @@ export default function LinkGenerator() {
                 targetCountries: selectedGeoCountries,
               }
             : undefined,
-          tiktok: {
+          tiktok: platform === "tiktok" ? {
             pixelEnabled: tiktokPixelEnabled,
             pixelId: tiktokPixelId,
             browserRedirectEnabled: tiktokBrowserRedirect,
             strictBotDetectionEnabled: tiktokStrictBotDetection,
-          },
+          } : undefined,
+          facebook: platform === "facebook" ? {
+            pixelId: facebookPixelId,
+            appId: facebookAppId,
+            trackingMode: facebookTrackingMode,
+          } : undefined,
         }),
       });
 
@@ -218,6 +236,7 @@ export default function LinkGenerator() {
         whitePageUrl: submissionUrl,
         campaignName,
         templateName,
+        platform,
         // V2 Features
         customUrl: customUrl || undefined,
         filterType: botFiltering === "params" ? "params-only" : "advanced",
@@ -227,12 +246,17 @@ export default function LinkGenerator() {
               countries: selectedGeoCountries,
             }
           : undefined,
-        tiktok: {
+        tiktok: platform === "tiktok" ? {
           pixelEnabled: tiktokPixelEnabled,
           pixelId: tiktokPixelId,
           browserRedirectEnabled: tiktokBrowserRedirect,
           strictBotDetectionEnabled: tiktokStrictBotDetection,
-        },
+        } : undefined,
+        facebook: platform === "facebook" ? {
+          pixelId: facebookPixelId,
+          appId: facebookAppId,
+          trackingMode: facebookTrackingMode,
+        } : undefined,
         disableCloaking,
         isKilled: false,
       };
@@ -286,6 +310,32 @@ export default function LinkGenerator() {
               </div>
 
               <div className="space-y-5">
+                {/* Platform Selection */}
+                <div>
+                  <Label className="text-xs font-medium mb-2 block text-slate-300">
+                    Platform
+                  </Label>
+                  <Select value={platform} onValueChange={(v) => setPlatform(v as "tiktok" | "facebook")}>
+                    <SelectTrigger className="bg-input border h-10 hover:border-ring/50 transition-colors text-sm">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-popover border">
+                      <SelectItem value="tiktok" className="text-sm">
+                        <div className="flex items-center gap-2">
+                          <Badge className="text-xs">TikTok</Badge>
+                          <span>TikTok Ads (Redirect Tracking)</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="facebook" className="text-sm">
+                        <div className="flex items-center gap-2">
+                          <Badge variant="secondary" className="text-xs">Facebook</Badge>
+                          <span>Facebook Ads (Direct + Redirect)</span>
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 {/* Offer */}
                 <div>
                   <Label className="text-xs font-medium mb-2 block text-slate-300">
@@ -543,17 +593,28 @@ export default function LinkGenerator() {
                     onCountriesChange={setSelectedGeoCountries}
                   />
 
-                  {/* TikTok Configuration */}
-                  <TikTokConfig
-                    pixelEnabled={tiktokPixelEnabled}
-                    pixelId={tiktokPixelId}
-                    browserRedirectEnabled={tiktokBrowserRedirect}
-                    strictBotDetectionEnabled={tiktokStrictBotDetection}
-                    onPixelEnabledChange={setTiktokPixelEnabled}
-                    onPixelIdChange={setTiktokPixelId}
-                    onBrowserRedirectChange={setTiktokBrowserRedirect}
-                    onStrictBotDetectionChange={setTiktokStrictBotDetection}
-                  />
+                  {/* Platform-Specific Configuration */}
+                  {platform === "tiktok" ? (
+                    <TikTokConfig
+                      pixelEnabled={tiktokPixelEnabled}
+                      pixelId={tiktokPixelId}
+                      browserRedirectEnabled={tiktokBrowserRedirect}
+                      strictBotDetectionEnabled={tiktokStrictBotDetection}
+                      onPixelEnabledChange={setTiktokPixelEnabled}
+                      onPixelIdChange={setTiktokPixelId}
+                      onBrowserRedirectChange={setTiktokBrowserRedirect}
+                      onStrictBotDetectionChange={setTiktokStrictBotDetection}
+                    />
+                  ) : (
+                    <FacebookConfig
+                      pixelId={facebookPixelId}
+                      appId={facebookAppId}
+                      trackingMode={facebookTrackingMode}
+                      onPixelIdChange={setFacebookPixelId}
+                      onAppIdChange={setFacebookAppId}
+                      onTrackingModeChange={setFacebookTrackingMode}
+                    />
+                  )}
 
                   {/* Advanced Link Options */}
                   <AdvancedLinkOptions
