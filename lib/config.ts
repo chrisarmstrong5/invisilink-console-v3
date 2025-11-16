@@ -270,6 +270,16 @@ export type SparkCode = {
   contentType?: "video" | "slideshow";
   mediaUrls?: string[];
   tags?: string[];
+  // Social post links (for Facebook/Instagram)
+  instagramPostLink?: string;
+  facebookPostLink?: string;
+  // TikTok link (for engagement boosting)
+  tiktokLink?: string;
+  // Engagement boost settings
+  engagementSettings?: {
+    likes: number;
+    saves: number;
+  };
   metrics: {
     clicks: number;
     conversions: number;

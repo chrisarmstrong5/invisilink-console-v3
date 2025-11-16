@@ -31,6 +31,11 @@ export default function SparkCodesPage() {
   const [offer, setOffer] = useState("");
   const [platform, setPlatform] = useState<"tiktok" | "facebook">("tiktok");
   const [tags, setTags] = useState("");
+  const [tiktokLink, setTiktokLink] = useState("");
+  const [instagramPostLink, setInstagramPostLink] = useState("");
+  const [facebookPostLink, setFacebookPostLink] = useState("");
+  const [engagementLikes, setEngagementLikes] = useState(1900);
+  const [engagementSaves, setEngagementSaves] = useState(180);
 
   // Load spark codes from localStorage
   useEffect(() => {
@@ -118,6 +123,13 @@ export default function SparkCodesPage() {
         contentType,
         mediaUrls,
         tags: tags.split(",").map((t) => t.trim()).filter(Boolean),
+        tiktokLink: tiktokLink.trim() || undefined,
+        instagramPostLink: instagramPostLink.trim() || undefined,
+        facebookPostLink: facebookPostLink.trim() || undefined,
+        engagementSettings: {
+          likes: engagementLikes,
+          saves: engagementSaves,
+        },
         metrics: {
           clicks: 0,
           conversions: 0,
@@ -134,6 +146,11 @@ export default function SparkCodesPage() {
       setSparkCodeId("");
       setOffer("");
       setTags("");
+      setTiktokLink("");
+      setInstagramPostLink("");
+      setFacebookPostLink("");
+      setEngagementLikes(1900);
+      setEngagementSaves(180);
       setMediaFiles([]);
       setContentType("video");
 
@@ -260,6 +277,70 @@ export default function SparkCodesPage() {
               onChange={(e) => setTags(e.target.value)}
               className="bg-input border h-10"
             />
+          </div>
+
+          {/* TikTok Link (for TikTok platform) */}
+          {platform === "tiktok" && (
+            <div className="md:col-span-2">
+              <Label className="mb-2 block text-sm font-medium text-foreground">TikTok Link (Optional)</Label>
+              <Input
+                placeholder="e.g., https://www.tiktok.com/@user/video/123..."
+                value={tiktokLink}
+                onChange={(e) => setTiktokLink(e.target.value)}
+                className="bg-input border h-10"
+              />
+            </div>
+          )}
+
+          {/* Instagram/Facebook Post Links (for Facebook platform) */}
+          {platform === "facebook" && (
+            <>
+              <div>
+                <Label className="mb-2 block text-sm font-medium text-foreground">Instagram Post Link (Optional)</Label>
+                <Input
+                  placeholder="e.g., https://www.instagram.com/p/..."
+                  value={instagramPostLink}
+                  onChange={(e) => setInstagramPostLink(e.target.value)}
+                  className="bg-input border h-10"
+                />
+              </div>
+              <div>
+                <Label className="mb-2 block text-sm font-medium text-foreground">Facebook Post Link (Optional)</Label>
+                <Input
+                  placeholder="e.g., https://www.facebook.com/..."
+                  value={facebookPostLink}
+                  onChange={(e) => setFacebookPostLink(e.target.value)}
+                  className="bg-input border h-10"
+                />
+              </div>
+            </>
+          )}
+
+          {/* Engagement Boost Settings */}
+          <div className="md:col-span-2 border-t pt-4 mt-2">
+            <Label className="mb-3 block text-sm font-semibold text-foreground">Engagement Boost Settings</Label>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label className="mb-2 block text-xs text-muted-foreground">Likes</Label>
+                <Input
+                  type="number"
+                  placeholder="1900"
+                  value={engagementLikes}
+                  onChange={(e) => setEngagementLikes(parseInt(e.target.value) || 1900)}
+                  className="bg-input border h-10"
+                />
+              </div>
+              <div>
+                <Label className="mb-2 block text-xs text-muted-foreground">Saves</Label>
+                <Input
+                  type="number"
+                  placeholder="180"
+                  value={engagementSaves}
+                  onChange={(e) => setEngagementSaves(parseInt(e.target.value) || 180)}
+                  className="bg-input border h-10"
+                />
+              </div>
+            </div>
           </div>
         </div>
 
@@ -391,6 +472,60 @@ export default function SparkCodesPage() {
                           {tag}
                         </Badge>
                       ))}
+                    </div>
+                  )}
+
+                  {/* Social Links */}
+                  {(sc.tiktokLink || sc.instagramPostLink || sc.facebookPostLink) && (
+                    <div className="mb-3 space-y-1">
+                      {sc.tiktokLink && (
+                        <a
+                          href={sc.tiktokLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs text-primary hover:underline flex items-center gap-1"
+                        >
+                          View on TikTok →
+                        </a>
+                      )}
+                      {sc.instagramPostLink && (
+                        <a
+                          href={sc.instagramPostLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs text-primary hover:underline flex items-center gap-1"
+                        >
+                          View on Instagram →
+                        </a>
+                      )}
+                      {sc.facebookPostLink && (
+                        <a
+                          href={sc.facebookPostLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs text-primary hover:underline flex items-center gap-1"
+                        >
+                          View on Facebook →
+                        </a>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Quick Add Engagement Button */}
+                  {sc.tiktokLink && sc.engagementSettings && (
+                    <div className="mb-3">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full h-8 text-xs gap-2"
+                        onClick={() => {
+                          toast.success(`Adding ${sc.engagementSettings?.likes} likes, ${sc.engagementSettings?.saves} saves to TikTok`);
+                          // TODO: Integrate with SMM panel API
+                        }}
+                      >
+                        <TrendingUp className="h-3 w-3" />
+                        Quick Add Engagement ({sc.engagementSettings.likes} likes, {sc.engagementSettings.saves} saves)
+                      </Button>
                     </div>
                   )}
 
