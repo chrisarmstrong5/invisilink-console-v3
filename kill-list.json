@@ -1,0 +1,12 @@
+{
+  "lastUpdated": "2025-11-16T15:35:18.292Z",
+  "totalKilled": 1,
+  "items": [
+    {
+      "slug": "apple-249-1ekbewkg5",
+      "domain": "apptime.pro",
+      "killedAt": "2025-11-16T15:35:18.291Z",
+      "reason": "Manually killed from UI"
+    }
+  ]
+}
