@@ -15,6 +15,7 @@ export interface DateRange {
 export interface RedTrackMetrics {
   source?: string; // e.g., "1639AP"
   sub1?: string; // Spark code ID
+  sub9?: string; // Link slug (link-level tracking)
   sub20?: string; // Source parameter (s= in URL, e.g., "apple3527")
   campaign?: string; // Campaign ID
   clicks: number;
