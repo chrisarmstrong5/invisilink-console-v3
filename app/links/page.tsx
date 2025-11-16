@@ -21,7 +21,7 @@ import { KillSwitchButton } from "@/components/kill-switch-button";
 import { toast } from "sonner";
 import { useLocalStorage } from "@/lib/hooks/use-local-storage";
 import { config, type SparkCode, type LinkHistoryItem } from "@/lib/config";
-import { buildTrackingUrl } from "@/lib/link-utilities";
+import { buildTrackingUrl, generateSlug } from "@/lib/link-utilities";
 import { isLinkKilled } from "@/lib/kill-list-manager";
 import {
   Copy,
@@ -132,9 +132,12 @@ export default function LinkGenerator() {
     setGenerationStatus("Preparing files...");
 
     try {
-      // 1. Build tracking URL
+      // 1. Generate slug first (needed for sub9 parameter)
+      const linkSlug = generateSlug(selectedOffer, accountNumber);
+
+      // 2. Build tracking URL with slug for link-level tracking
       const sparkCodeId = selectedSparkCode === "none" ? undefined : selectedSparkCode;
-      const trackingUrl = buildTrackingUrl(selectedOffer, accountNumber, sparkCodeId);
+      const trackingUrl = buildTrackingUrl(selectedOffer, accountNumber, sparkCodeId, linkSlug);
 
       setGenerationStatus("Generating white page...");
 
