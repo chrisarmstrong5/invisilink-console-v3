@@ -132,6 +132,34 @@ CREATE TABLE IF NOT EXISTS kill_list (
   original_link_data JSONB
 );
 
+-- Competitor ads: Spy tool for tracking competitor creatives
+CREATE TABLE IF NOT EXISTS competitor_ads (
+  id TEXT PRIMARY KEY,
+  creator_name TEXT NOT NULL,
+  platform TEXT NOT NULL,
+  content_type TEXT NOT NULL,
+  media_urls TEXT[] NOT NULL,
+  ad_content TEXT,
+  spark_code TEXT,
+  product_name TEXT,
+  product_link TEXT,
+  captured_date TIMESTAMP DEFAULT NOW(),
+  tags TEXT[],
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Boost history: Track TikTok engagement boosts
+CREATE TABLE IF NOT EXISTS boost_history (
+  id TEXT PRIMARY KEY,
+  tiktok_link TEXT NOT NULL,
+  likes INTEGER NOT NULL,
+  saves INTEGER NOT NULL,
+  views INTEGER,
+  order_ids INTEGER[] NOT NULL,
+  cost DECIMAL(10,2),
+  date TIMESTAMP DEFAULT NOW()
+);
+
 -- ======================
 -- INDEXES FOR PERFORMANCE
 -- ======================
@@ -163,6 +191,14 @@ CREATE INDEX IF NOT EXISTS idx_spend_account ON spend_tracking(account_id);
 -- Kill list indexes
 CREATE INDEX IF NOT EXISTS idx_kill_date ON kill_list(killed_at DESC);
 CREATE INDEX IF NOT EXISTS idx_kill_platform ON kill_list(platform);
+
+-- Competitor ads indexes
+CREATE INDEX IF NOT EXISTS idx_competitor_platform ON competitor_ads(platform);
+CREATE INDEX IF NOT EXISTS idx_competitor_creator ON competitor_ads(creator_name);
+CREATE INDEX IF NOT EXISTS idx_competitor_date ON competitor_ads(captured_date DESC);
+
+-- Boost history indexes
+CREATE INDEX IF NOT EXISTS idx_boost_date ON boost_history(date DESC);
 
 -- ======================
 -- FUTURE TABLES (Phase 2-3)

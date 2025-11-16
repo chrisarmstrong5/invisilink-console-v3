@@ -16,6 +16,7 @@ import {
   Eye,
   Settings,
   TrendingUp,
+  Zap,
 } from "lucide-react";
 
 interface MobileDrawerProps {
@@ -31,6 +32,7 @@ export function MobileDrawer({ open, onOpenChange }: MobileDrawerProps) {
     { href: "/links", icon: Link2, label: "Link Generator" },
     { href: "/spark-codes", icon: Sparkles, label: "Spark Codes" },
     { href: "/performance", icon: TrendingUp, label: "Performance" },
+    { href: "/engagement", icon: Zap, label: "Engagement Boost" },
     { href: "/spark-codes-analytics", icon: BarChart3, label: "Spark Analytics" },
     { href: "/competitors", icon: Eye, label: "Competitor Spy" },
     { href: "/setup", icon: Settings, label: "Setup" },

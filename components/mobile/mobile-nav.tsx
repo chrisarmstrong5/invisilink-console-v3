@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { Home, Link2, Sparkles, TrendingUp, MoreHorizontal } from "lucide-react";
+import { Home, Link2, Sparkles, TrendingUp, Zap } from "lucide-react";
 
 export function MobileNav() {
   const pathname = usePathname();
@@ -12,7 +12,7 @@ export function MobileNav() {
     { href: "/links", icon: Link2, label: "Links" },
     { href: "/spark-codes", icon: Sparkles, label: "Spark" },
     { href: "/performance", icon: TrendingUp, label: "Performance" },
-    { href: "/competitors", icon: MoreHorizontal, label: "More" },
+    { href: "/engagement", icon: Zap, label: "Boost" },
   ];
 
   return (

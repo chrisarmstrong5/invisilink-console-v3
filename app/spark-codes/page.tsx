@@ -37,18 +37,45 @@ export default function SparkCodesPage() {
   const [engagementLikes, setEngagementLikes] = useState(1900);
   const [engagementSaves, setEngagementSaves] = useState(180);
 
-  // Load spark codes from localStorage
+  // Load spark codes from database
   useEffect(() => {
-    const saved = localStorage.getItem("sparkCodes");
-    if (saved) {
-      setSparkCodes(JSON.parse(saved));
+    async function fetchSparkCodes() {
+      try {
+        const response = await fetch("/api/spark-codes");
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            setSparkCodes(data.data);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch spark codes:", error);
+      }
     }
+    fetchSparkCodes();
   }, []);
 
-  // Save to localStorage
-  const saveSparkCodes = (codes: SparkCode[]) => {
-    localStorage.setItem("sparkCodes", JSON.stringify(codes));
-    setSparkCodes(codes);
+  // Save to database
+  const saveSparkCode = async (code: SparkCode) => {
+    try {
+      const response = await fetch("/api/spark-codes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(code),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setSparkCodes([...sparkCodes, data.data]);
+          return true;
+        }
+      }
+      return false;
+    } catch (error) {
+      console.error("Failed to save spark code:", error);
+      return false;
+    }
   };
 
   // Dropzone for media upload
@@ -140,32 +167,49 @@ export default function SparkCodesPage() {
         },
       };
 
-      saveSparkCodes([...sparkCodes, newSparkCode]);
+      const saved = await saveSparkCode(newSparkCode);
 
-      // Reset form
-      setSparkCodeId("");
-      setOffer("");
-      setTags("");
-      setTiktokLink("");
-      setInstagramPostLink("");
-      setFacebookPostLink("");
-      setEngagementLikes(1900);
-      setEngagementSaves(180);
-      setMediaFiles([]);
-      setContentType("video");
+      if (saved) {
+        // Reset form
+        setSparkCodeId("");
+        setOffer("");
+        setTags("");
+        setTiktokLink("");
+        setInstagramPostLink("");
+        setFacebookPostLink("");
+        setEngagementLikes(1900);
+        setEngagementSaves(180);
+        setMediaFiles([]);
+        setContentType("video");
 
-      toast.success("Spark code added successfully!");
+        toast.success("Spark code added successfully!");
+      } else {
+        toast.error("Failed to save spark code to database");
+      }
     } catch (error) {
       console.error(error);
-      toast.error("Failed to upload media files");
+      toast.error("Failed to add spark code");
     }
     setLoading(false);
   };
 
   // Delete spark code
-  const handleDelete = (id: string) => {
-    saveSparkCodes(sparkCodes.filter((sc) => sc.id !== id));
-    toast.success("Spark code deleted");
+  const handleDelete = async (id: string) => {
+    try {
+      const response = await fetch(`/api/spark-codes/${id}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        setSparkCodes(sparkCodes.filter((sc) => sc.id !== id));
+        toast.success("Spark code deleted");
+      } else {
+        toast.error("Failed to delete spark code");
+      }
+    } catch (error) {
+      console.error("Failed to delete spark code:", error);
+      toast.error("Failed to delete spark code");
+    }
   };
 
   return (

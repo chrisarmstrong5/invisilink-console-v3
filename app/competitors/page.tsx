@@ -35,18 +35,45 @@ export default function CompetitorsPage() {
   const [notes, setNotes] = useState("");
   const [tiktokLink, setTiktokLink] = useState("");
 
-  // Load from localStorage
+  // Load from database
   useEffect(() => {
-    const saved = localStorage.getItem("competitorAds");
-    if (saved) {
-      setCompetitors(JSON.parse(saved));
+    async function fetchCompetitors() {
+      try {
+        const response = await fetch("/api/competitors");
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            setCompetitors(data.data);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch competitors:", error);
+      }
     }
+    fetchCompetitors();
   }, []);
 
-  // Save to localStorage
-  const saveCompetitors = (ads: CompetitorAd[]) => {
-    localStorage.setItem("competitorAds", JSON.stringify(ads));
-    setCompetitors(ads);
+  // Save to database
+  const saveCompetitor = async (ad: CompetitorAd) => {
+    try {
+      const response = await fetch("/api/competitors", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(ad),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setCompetitors([...competitors, data.data]);
+          return true;
+        }
+      }
+      return false;
+    } catch (error) {
+      console.error("Failed to save competitor:", error);
+      return false;
+    }
   };
 
   // Dropzone for ad media
@@ -144,30 +171,47 @@ export default function CompetitorsPage() {
         createdDate: new Date().toISOString(),
       };
 
-      saveCompetitors([...competitors, newAd]);
+      const saved = await saveCompetitor(newAd);
 
-      // Reset form
-      setCompetitor("");
-      setNiche("");
-      setTags("");
-      setNotes("");
-      setTiktokLink("");
-      setMediaFiles([]);
-      setLanderScreenshot(null);
-      setContentType("video");
+      if (saved) {
+        // Reset form
+        setCompetitor("");
+        setNiche("");
+        setTags("");
+        setNotes("");
+        setTiktokLink("");
+        setMediaFiles([]);
+        setLanderScreenshot(null);
+        setContentType("video");
 
-      toast.success("Competitor ad added successfully!");
+        toast.success("Competitor ad added successfully!");
+      } else {
+        toast.error("Failed to save competitor ad to database");
+      }
     } catch (error) {
       console.error(error);
-      toast.error("Failed to upload media files");
+      toast.error("Failed to add competitor ad");
     }
     setLoading(false);
   };
 
   // Delete ad
-  const handleDelete = (id: string) => {
-    saveCompetitors(competitors.filter((ad) => ad.id !== id));
-    toast.success("Competitor ad deleted");
+  const handleDelete = async (id: string) => {
+    try {
+      const response = await fetch(`/api/competitors/${id}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        setCompetitors(competitors.filter((ad) => ad.id !== id));
+        toast.success("Competitor ad deleted");
+      } else {
+        toast.error("Failed to delete competitor ad");
+      }
+    } catch (error) {
+      console.error("Failed to delete competitor ad:", error);
+      toast.error("Failed to delete competitor ad");
+    }
   };
 
   // Filter ads
