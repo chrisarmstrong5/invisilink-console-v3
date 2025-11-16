@@ -24,6 +24,7 @@ import {
 import { redtrackApi, type RedTrackMetrics } from "@/lib/api/redtrack";
 import { config } from "@/lib/config";
 import { toast } from "sonner";
+import { MigrationBanner } from "@/components/migration-banner";
 
 interface DailyStats {
   today: RedTrackMetrics;
@@ -134,6 +135,9 @@ export default function DashboardPage() {
         <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
         <p className="text-sm text-muted-foreground">Real-time performance metrics from RedTrack</p>
       </div>
+
+      {/* Migration Banner */}
+      <MigrationBanner />
 
       {/* Daily Stats Cards */}
       <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
