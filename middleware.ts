@@ -95,6 +95,7 @@ const ADMIN_API_ROUTES = [
   "/api/boost-history",
   "/api/migrate",
   "/api/smm",
+  "/api/spend",
 ];
 
 export function middleware(request: NextRequest) {
