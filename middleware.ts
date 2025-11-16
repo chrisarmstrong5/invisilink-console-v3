@@ -1,16 +1,20 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { config as appConfig } from "./lib/config";
-import { isAuthenticatedMiddleware } from "./lib/auth";
 
 /**
  * Middleware for Security and Kill Switch
  *
  * Handles:
  * 1. Domain-based routing (cloak domains vs admin domain)
- * 2. Admin authentication
+ * 2. Admin domain protection (Vercel URLs only)
  * 3. Kill switch for burned links
  * 4. 404 for invalid routes on cloak domains
+ *
+ * Security Model:
+ * - Admin interface ONLY accessible via .vercel.app domains
+ * - Cloak domains (appflow32.com, etc.) ONLY serve white pages
+ * - Root access on cloak domains returns 404
  */
 
 /**
@@ -92,13 +96,11 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const hostname = request.headers.get("host") || "";
 
-  // Skip Next.js internals, static files, and auth routes
+  // Skip Next.js internals and static files
   if (
     pathname.startsWith("/_next/") ||
     pathname.startsWith("/static/") ||
-    pathname.includes(".") ||
-    pathname.startsWith("/api/auth/") || // Allow auth endpoints
-    pathname === "/login" // Allow login page
+    pathname.includes(".")
   ) {
     return NextResponse.next();
   }
@@ -107,24 +109,8 @@ export function middleware(request: NextRequest) {
   const isAdmin = isAdminDomain(hostname);
 
   if (isAdmin) {
-    // ===== ADMIN DOMAIN LOGIC =====
-
-    // Check if route requires authentication
-    const requiresAuth =
-      ADMIN_ROUTES.includes(pathname) ||
-      ADMIN_API_ROUTES.some((route) => pathname.startsWith(route));
-
-    if (requiresAuth) {
-      // Check if user is authenticated
-      if (!isAuthenticatedMiddleware(request)) {
-        // Redirect to login page
-        const loginUrl = new URL("/login", request.url);
-        loginUrl.searchParams.set("redirect", pathname);
-        return NextResponse.redirect(loginUrl);
-      }
-    }
-
-    // Allow authenticated admin requests
+    // ===== ADMIN DOMAIN LOGIC (.vercel.app URLs) =====
+    // Allow all routes on Vercel URLs - this is our admin interface
     return NextResponse.next();
   } else {
     // ===== CLOAK DOMAIN LOGIC =====
@@ -162,11 +148,10 @@ export const config = {
   matcher: [
     /*
      * Match all request paths except for the ones starting with:
-     * - api/auth (authentication endpoints)
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      */
-    "/((?!api/auth|_next/static|_next/image|favicon.ico).*)",
+    "/((?!_next/static|_next/image|favicon.ico).*)",
   ],
 };
