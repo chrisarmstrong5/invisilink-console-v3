@@ -22,6 +22,11 @@ function isAdminDomain(hostname: string): boolean {
   // Remove port for localhost comparison
   const hostWithoutPort = hostname.split(":")[0];
 
+  // Check if this is a Vercel deployment (all .vercel.app domains are admin)
+  if (hostWithoutPort.endsWith(".vercel.app")) {
+    return true;
+  }
+
   // Check primary admin domain
   if (hostname === adminDomain || hostWithoutPort === adminDomain) {
     return true;
