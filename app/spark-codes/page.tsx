@@ -19,10 +19,13 @@ import { toast } from "sonner";
 import { config, type SparkCode } from "@/lib/config";
 import { Upload, X, Video, Image as ImageIcon, TrendingUp, TrendingDown, BarChart3 } from "lucide-react";
 import Link from "next/link";
+import { SparkCodeCompactCard } from "@/components/spark-code-compact-card";
+import { SparkCodeDetailDialog } from "@/components/spark-code-detail-dialog";
 
 export default function SparkCodesPage() {
   const [sparkCodes, setSparkCodes] = useState<SparkCode[]>([]);
   const [loading, setLoading] = useState(false);
+  const [selectedCard, setSelectedCard] = useState<SparkCode | null>(null);
 
   // Form state
   const [contentType, setContentType] = useState<"video" | "slideshow">("video");
@@ -466,163 +469,48 @@ export default function SparkCodesPage() {
             <p className="text-sm text-muted-foreground">No spark codes yet. Add one above to get started.</p>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {sparkCodes.map((sc) => (
-              <Card key={sc.id} className="overflow-hidden shadow-sm">
-                {/* Media Preview */}
-                <div className="relative aspect-video bg-secondary">
-                  {sc.mediaUrls && sc.mediaUrls[0] && (
-                    <img
-                      src={sc.mediaUrls[0]}
-                      alt={sc.name}
-                      className="h-full w-full object-cover"
-                    />
-                  )}
-                  <div className="absolute right-2 top-2 flex gap-1">
-                    <Badge className="bg-primary text-xs">{sc.contentType}</Badge>
-                    <Badge variant="outline" className="text-xs">
-                      {sc.platform}
-                    </Badge>
-                  </div>
-                </div>
+          <>
+            <div className="grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
+              {sparkCodes.map((sc) => (
+                <SparkCodeCompactCard
+                  key={sc.id}
+                  sparkCode={sc}
+                  onClick={() => setSelectedCard(sc)}
+                />
+              ))}
+            </div>
 
-                {/* Info */}
-                <div className="p-4">
-                  <div className="mb-3 flex items-start justify-between">
-                    <div>
-                      <Badge className="mb-2 bg-cyan-500/10 text-cyan-600 border-cyan-500/20 font-mono text-xs">
-                        {sc.id}
-                      </Badge>
-                      <p className="text-sm font-semibold text-foreground">{sc.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {config.offers[sc.offerCode as keyof typeof config.offers]?.name}
-                      </p>
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleDelete(sc.id)}
-                      className="h-7 px-2 text-red-600 hover:bg-red-50 hover:text-red-700"
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
-                  </div>
+            <SparkCodeDetailDialog
+              sparkCode={selectedCard}
+              open={selectedCard !== null}
+              onClose={() => setSelectedCard(null)}
+              onDelete={handleDelete}
+              onEngagementBoost={async (sc) => {
+                try {
+                  const response = await fetch("/api/smm/boost", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      tiktokLink: sc.tiktokLink,
+                      likes: sc.engagementSettings?.likes,
+                      saves: sc.engagementSettings?.saves,
+                    }),
+                  });
 
-                  {/* Tags */}
-                  {sc.tags && sc.tags.length > 0 && (
-                    <div className="mb-3 flex flex-wrap gap-1">
-                      {sc.tags.map((tag, idx) => (
-                        <Badge key={idx} variant="secondary" className="text-xs">
-                          {tag}
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
+                  const data = await response.json();
 
-                  {/* Social Links */}
-                  {(sc.tiktokLink || sc.instagramPostLink || sc.facebookPostLink) && (
-                    <div className="mb-3 space-y-1">
-                      {sc.tiktokLink && (
-                        <a
-                          href={sc.tiktokLink}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-xs text-primary hover:underline flex items-center gap-1"
-                        >
-                          View on TikTok →
-                        </a>
-                      )}
-                      {sc.instagramPostLink && (
-                        <a
-                          href={sc.instagramPostLink}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-xs text-primary hover:underline flex items-center gap-1"
-                        >
-                          View on Instagram →
-                        </a>
-                      )}
-                      {sc.facebookPostLink && (
-                        <a
-                          href={sc.facebookPostLink}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-xs text-primary hover:underline flex items-center gap-1"
-                        >
-                          View on Facebook →
-                        </a>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Quick Add Engagement Button */}
-                  {sc.tiktokLink && sc.engagementSettings && (
-                    <div className="mb-3">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full h-8 text-xs gap-2"
-                        onClick={async () => {
-                          try {
-                            const response = await fetch("/api/smm/boost", {
-                              method: "POST",
-                              headers: { "Content-Type": "application/json" },
-                              body: JSON.stringify({
-                                tiktokLink: sc.tiktokLink,
-                                likes: sc.engagementSettings?.likes,
-                                saves: sc.engagementSettings?.saves,
-                              }),
-                            });
-
-                            const data = await response.json();
-
-                            if (response.ok && data.success) {
-                              toast.success(`Engagement boost order placed! Orders: ${data.orders.join(", ")}`);
-                            } else {
-                              toast.error(data.error || data.message || "Failed to boost engagement");
-                            }
-                          } catch (error) {
-                            toast.error("Failed to boost engagement");
-                            console.error(error);
-                          }
-                        }}
-                      >
-                        <TrendingUp className="h-3 w-3" />
-                        Quick Add Engagement ({sc.engagementSettings.likes} likes, {sc.engagementSettings.saves} saves)
-                      </Button>
-                    </div>
-                  )}
-
-                  {/* Metrics */}
-                  <div className="grid grid-cols-2 gap-2 border-t pt-3">
-                    <div>
-                      <p className="text-xs text-muted-foreground">Clicks</p>
-                      <p className="text-sm font-semibold text-foreground">{sc.metrics.clicks}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">CVR</p>
-                      <div className="flex items-center gap-1">
-                        <p className="text-sm font-semibold text-foreground">{sc.metrics.cvr.toFixed(2)}%</p>
-                        {sc.metrics.cvr >= 3 ? (
-                          <TrendingUp className="h-3 w-3 text-green-600" />
-                        ) : (
-                          <TrendingDown className="h-3 w-3 text-red-600" />
-                        )}
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">Revenue</p>
-                      <p className="text-sm font-semibold text-foreground">${sc.metrics.revenue}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">ROI</p>
-                      <p className="text-sm font-semibold text-foreground">{sc.metrics.roi.toFixed(0)}%</p>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
+                  if (response.ok && data.success) {
+                    toast.success(`Engagement boost order placed! Orders: ${data.orders.join(", ")}`);
+                  } else {
+                    toast.error(data.error || data.message || "Failed to boost engagement");
+                  }
+                } catch (error) {
+                  toast.error("Failed to boost engagement");
+                  console.error(error);
+                }
+              }}
+            />
+          </>
         )}
       </div>
     </div>
