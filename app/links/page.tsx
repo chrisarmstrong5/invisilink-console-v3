@@ -283,28 +283,28 @@ export default function LinkGenerator() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Main Container */}
-      <div className="container mx-auto px-6 py-8 max-w-7xl">
+      <div className="container mx-auto px-4 md:px-6 py-4 md:py-8 max-w-7xl">
         {/* Header */}
-        <div className="mb-10">
-          <div className="flex items-baseline gap-3 mb-2">
-            <h1 className="text-3xl font-semibold tracking-tight">
+        <div className="mb-6 md:mb-10">
+          <div className="flex items-baseline gap-2 md:gap-3 mb-2">
+            <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">
               InvisiLink Console
             </h1>
-            <span className="text-sm font-medium text-purple-400 bg-purple-500/10 px-2 py-1 rounded-md">
+            <span className="text-xs md:text-sm font-medium text-purple-400 bg-purple-500/10 px-1.5 md:px-2 py-0.5 md:py-1 rounded-md">
               v3.0
             </span>
           </div>
-          <p className="text-slate-400 text-sm">
+          <p className="text-slate-400 text-xs md:text-sm">
             Coded tracking system with TikTok Spark integration
           </p>
         </div>
 
         {/* Main Grid */}
-        <div className="grid lg:grid-cols-3 gap-6 mb-6">
+        <div className="grid lg:grid-cols-3 gap-4 md:gap-6 mb-4 md:mb-6">
           {/* Left Panel */}
-          <div className="lg:col-span-2 space-y-6">
-            <Card className="bg-card border p-6 shadow-sm">
-              <div className="flex items-center gap-2.5 mb-6">
+          <div className="lg:col-span-2 space-y-4 md:space-y-6">
+            <Card className="bg-card border p-4 md:p-6 shadow-sm">
+              <div className="flex items-center gap-2 md:gap-2.5 mb-4 md:mb-6">
                 <Link2 className="w-5 h-5 text-blue-400" />
                 <h2 className="text-base font-semibold">Campaign Setup</h2>
               </div>
