@@ -90,6 +90,11 @@ const ADMIN_API_ROUTES = [
   "/api/redtrack",
   "/api/upload",
   "/api/kill-list",
+  "/api/spark-codes",
+  "/api/competitors",
+  "/api/boost-history",
+  "/api/migrate",
+  "/api/smm",
 ];
 
 export function middleware(request: NextRequest) {

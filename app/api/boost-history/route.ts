@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { boostHistoryRepository } from "@/lib/db/repositories/boost-history";
+import { objectToSnakeCase, objectToCamelCase } from "@/lib/utils/case-transform";
 
 export async function GET() {
   try {
     const history = await boostHistoryRepository.findAll();
-    return NextResponse.json({ success: true, data: history });
+    const camelCasedData = history.map((h) => objectToCamelCase(h));
+    return NextResponse.json({ success: true, data: camelCasedData });
   } catch (error) {
     console.error("Failed to fetch boost history:", error);
     return NextResponse.json(
@@ -17,8 +19,10 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const boost = await boostHistoryRepository.create(body);
-    return NextResponse.json({ success: true, data: boost });
+    const snakeCasedBody = objectToSnakeCase(body);
+    const boost = await boostHistoryRepository.create(snakeCasedBody);
+    const camelCasedData = objectToCamelCase(boost);
+    return NextResponse.json({ success: true, data: camelCasedData });
   } catch (error) {
     console.error("Failed to create boost history:", error);
     return NextResponse.json(

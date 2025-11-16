@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { competitorAdsRepository } from "@/lib/db/repositories/competitors";
+import { objectToSnakeCase, objectToCamelCase } from "@/lib/utils/case-transform";
 
 export async function GET() {
   try {
     const ads = await competitorAdsRepository.findAll();
-    return NextResponse.json({ success: true, data: ads });
+    const camelCasedData = ads.map((ad) => objectToCamelCase(ad));
+    return NextResponse.json({ success: true, data: camelCasedData });
   } catch (error) {
     console.error("Failed to fetch competitor ads:", error);
     return NextResponse.json(
@@ -20,7 +22,8 @@ export async function POST(request: NextRequest) {
 
     // Handle bulk import
     if (body.bulk && Array.isArray(body.ads)) {
-      await competitorAdsRepository.bulkInsert(body.ads);
+      const snakeCasedAds = body.ads.map((ad: any) => objectToSnakeCase(ad));
+      await competitorAdsRepository.bulkInsert(snakeCasedAds);
       return NextResponse.json({
         success: true,
         message: `Imported ${body.ads.length} competitor ads`
@@ -28,8 +31,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Handle single ad creation
-    const ad = await competitorAdsRepository.create(body);
-    return NextResponse.json({ success: true, data: ad });
+    const snakeCasedBody = objectToSnakeCase(body);
+    const ad = await competitorAdsRepository.create(snakeCasedBody);
+    const camelCasedData = objectToCamelCase(ad);
+    return NextResponse.json({ success: true, data: camelCasedData });
   } catch (error) {
     console.error("Failed to create competitor ad:", error);
     return NextResponse.json(
