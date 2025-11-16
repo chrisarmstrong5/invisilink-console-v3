@@ -11,14 +11,16 @@ export async function GET(request: Request) {
   try {
     // Build URL with all parameters from the request
     const params = new URLSearchParams();
-    params.set("api_key", API_KEY); // API key must be in query params
 
-    // Pass through all other parameters from the client
+    // Pass through all other parameters from the client, except api_key
     searchParams.forEach((value, key) => {
-      if (key !== "endpoint") {
+      if (key !== "endpoint" && key !== "api_key") {
         params.set(key, value);
       }
     });
+
+    // Add API key last to ensure it's not duplicated
+    params.set("api_key", API_KEY);
 
     const url = `${BASE_URL}${endpoint}?${params.toString()}`;
     console.log("[RedTrack API] Fetching:", url.replace(API_KEY, "***"));

@@ -68,7 +68,7 @@ class RedTrackAPI {
    * Get all campaigns
    */
   async getCampaigns(): Promise<CampaignData[]> {
-    return this.request<CampaignData[]>("/campaigns");
+    return this.request<CampaignData[]>("/v1/campaigns");
   }
 
   /**
@@ -81,7 +81,7 @@ class RedTrackAPI {
     dateRange: DateRange,
     groupBy: string[] = ["campaign"]
   ): Promise<RedTrackMetrics[]> {
-    const data = await this.request<any>("/report", {
+    const data = await this.request<any>("/v1/report", {
       date_from: dateRange.from,
       date_to: dateRange.to,
       group: groupBy.join(","),
