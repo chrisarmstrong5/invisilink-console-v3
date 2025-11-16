@@ -42,37 +42,13 @@ export const config = {
       status: "active",
     },
     {
-      id: "cartrewards",
-      name: "CartRewards",
-      url: "https://www.cartrewards.pro",
-      status: "active",
-    },
-    {
       id: "appflow32",
       name: "AppFlow32",
       url: "https://appflow32.com",
       status: "active",
     },
-    {
-      id: "bluewhale47",
-      name: "BlueWhale47",
-      url: "https://bluewhale47.xyz",
-      status: "active",
-    },
-    {
-      id: "creds4cart",
-      name: "Creds4Cart",
-      url: "https://creds4cart.xyz",
-      status: "active",
-    },
-    {
-      id: "tvyoo",
-      name: "TvYoo",
-      url: "https://tvyoo.xyz",
-      status: "active",
-    },
   ],
-  defaultCloakDomain: "cartrewards",
+  defaultCloakDomain: "appflow32",
   github: {
     owner: "chrisarmstrong5",
     repo: "invisilink-console-v3",
