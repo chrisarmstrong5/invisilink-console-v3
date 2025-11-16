@@ -36,6 +36,18 @@ export function MobileUpload({
     }
 
     setSelectedFiles(files);
+
+    // Immediately call onUpload to update parent component
+    if (files.length > 0) {
+      setUploading(true);
+      try {
+        await onUpload(files);
+      } catch (error) {
+        console.error("Upload error:", error);
+      } finally {
+        setUploading(false);
+      }
+    }
   }
 
   async function handleUpload() {
@@ -80,9 +92,10 @@ export function MobileUpload({
           onClick={() => fileInputRef.current?.click()}
           className="w-full h-14 text-base gap-2"
           variant="outline"
+          disabled={uploading}
         >
           <Upload className="w-5 h-5" />
-          {label}
+          {uploading ? "Processing..." : label}
         </Button>
       ) : (
         <>
@@ -112,35 +125,16 @@ export function MobileUpload({
             ))}
           </div>
 
-          {/* Upload Progress */}
-          {uploading && (
-            <div className="space-y-2">
-              <Progress value={uploadProgress} className="h-2" />
-              <p className="text-xs text-center text-muted-foreground">
-                Uploading... {uploadProgress}%
-              </p>
-            </div>
-          )}
-
-          {/* Action Buttons */}
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              variant="outline"
-              className="flex-1 h-12"
-            >
-              Add More
-            </Button>
-            <Button
-              type="button"
-              onClick={handleUpload}
-              disabled={uploading}
-              className="flex-1 h-12"
-            >
-              {uploading ? "Uploading..." : `Upload ${selectedFiles.length}`}
-            </Button>
-          </div>
+          {/* Add More Button */}
+          <Button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            variant="outline"
+            className="w-full h-12"
+            disabled={uploading || !multiple}
+          >
+            {multiple ? "Add More" : "Change File"}
+          </Button>
         </>
       )}
     </div>
