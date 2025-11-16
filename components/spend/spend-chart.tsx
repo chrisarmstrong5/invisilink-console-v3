@@ -87,19 +87,19 @@ export function SpendChart({ data, dateRange, onDateRangeChange }: SpendChartPro
                       <div className="flex items-center justify-between gap-4">
                         <span className="text-xs text-muted-foreground">TikTok:</span>
                         <span className="text-xs font-medium text-[hsl(var(--chart-1))]">
-                          ${payload[0].payload.tiktok.toFixed(2)}
+                          ${Number(payload[0].payload.tiktok || 0).toFixed(2)}
                         </span>
                       </div>
                       <div className="flex items-center justify-between gap-4">
                         <span className="text-xs text-muted-foreground">Facebook:</span>
                         <span className="text-xs font-medium text-[hsl(var(--chart-2))]">
-                          ${payload[0].payload.facebook.toFixed(2)}
+                          ${Number(payload[0].payload.facebook || 0).toFixed(2)}
                         </span>
                       </div>
                       <div className="flex items-center justify-between gap-4 pt-1 border-t">
                         <span className="text-xs font-medium">Total:</span>
                         <span className="text-xs font-bold">
-                          ${payload[0].payload.total.toFixed(2)}
+                          ${Number(payload[0].payload.total || 0).toFixed(2)}
                         </span>
                       </div>
                     </div>
