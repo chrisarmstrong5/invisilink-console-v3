@@ -289,6 +289,7 @@ export type CompetitorAd = {
   niche: string;
   tags: string[];
   notes: string;
+  tiktokLink?: string;
   createdDate: string;
 };
 

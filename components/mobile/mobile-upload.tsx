@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Upload, Camera, X } from "lucide-react";
+import { Upload, X } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
 interface MobileUploadProps {
@@ -10,7 +10,6 @@ interface MobileUploadProps {
   multiple?: boolean;
   maxSize?: number; // in bytes
   onUpload: (files: File[]) => Promise<void>;
-  showCamera?: boolean;
   label?: string;
 }
 
@@ -19,7 +18,6 @@ export function MobileUpload({
   multiple = false,
   maxSize = 50 * 1024 * 1024, // 50MB default
   onUpload,
-  showCamera = true,
   label = "Upload Files",
 }: MobileUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -74,7 +72,6 @@ export function MobileUpload({
         multiple={multiple}
         onChange={handleFileChange}
         className="hidden"
-        {...(showCamera && { capture: "environment" })}
       />
 
       {selectedFiles.length === 0 ? (
@@ -84,17 +81,8 @@ export function MobileUpload({
           className="w-full h-14 text-base gap-2"
           variant="outline"
         >
-          {showCamera ? (
-            <>
-              <Camera className="w-5 h-5" />
-              Take Photo / {label}
-            </>
-          ) : (
-            <>
-              <Upload className="w-5 h-5" />
-              {label}
-            </>
-          )}
+          <Upload className="w-5 h-5" />
+          {label}
         </Button>
       ) : (
         <>

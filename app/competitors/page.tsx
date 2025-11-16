@@ -33,6 +33,7 @@ export default function CompetitorsPage() {
   const [niche, setNiche] = useState("");
   const [tags, setTags] = useState("");
   const [notes, setNotes] = useState("");
+  const [tiktokLink, setTiktokLink] = useState("");
 
   // Load from localStorage
   useEffect(() => {
@@ -139,6 +140,7 @@ export default function CompetitorsPage() {
         niche: niche.trim(),
         tags: tags.split(",").map((t) => t.trim()).filter(Boolean),
         notes: notes.trim(),
+        tiktokLink: tiktokLink.trim() || undefined,
         createdDate: new Date().toISOString(),
       };
 
@@ -149,6 +151,7 @@ export default function CompetitorsPage() {
       setNiche("");
       setTags("");
       setNotes("");
+      setTiktokLink("");
       setMediaFiles([]);
       setLanderScreenshot(null);
       setContentType("video");
@@ -256,6 +259,17 @@ export default function CompetitorsPage() {
             />
           </div>
 
+          {/* TikTok Link */}
+          <div>
+            <Label className="mb-2 block text-sm font-medium text-foreground">TikTok Link (Optional)</Label>
+            <Input
+              placeholder="e.g., https://www.tiktok.com/@user/video/123..."
+              value={tiktokLink}
+              onChange={(e) => setTiktokLink(e.target.value)}
+              className="bg-input border h-10"
+            />
+          </div>
+
           {/* Notes */}
           <div className="md:col-span-2">
             <Label className="mb-2 block text-sm font-medium text-foreground">Notes</Label>
@@ -326,7 +340,6 @@ export default function CompetitorsPage() {
                 setMediaFiles(files);
                 toast.success(`${files.length} file(s) selected`);
               }}
-              showCamera
               label={contentType === "video" ? "Upload Video/Screenshot" : "Upload 3 Slides"}
             />
           </div>
@@ -385,7 +398,6 @@ export default function CompetitorsPage() {
                   toast.success("Landing page screenshot selected");
                 }
               }}
-              showCamera
               label="Upload Lander Screenshot"
             />
           </div>
@@ -465,6 +477,20 @@ export default function CompetitorsPage() {
                           {tag}
                         </Badge>
                       ))}
+                    </div>
+                  )}
+
+                  {/* TikTok Link */}
+                  {ad.tiktokLink && (
+                    <div className="mb-3">
+                      <a
+                        href={ad.tiktokLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-primary hover:underline flex items-center gap-1"
+                      >
+                        View on TikTok →
+                      </a>
                     </div>
                   )}
 

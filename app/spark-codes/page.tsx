@@ -321,7 +321,6 @@ export default function SparkCodesPage() {
                 setMediaFiles(files);
                 toast.success(`${files.length} file(s) selected`);
               }}
-              showCamera
               label={contentType === "video" ? "Upload Video/Screenshot" : "Upload Slides"}
             />
           </div>
