@@ -2,15 +2,17 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Link2, Sparkles, Eye, BarChart3, DollarSign } from "lucide-react";
+import { Home, Link2, Sparkles, Eye, BarChart3, DollarSign, Zap, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navigation = [
   { name: "Dashboard", href: "/", icon: Home },
+  { name: "Performance", href: "/performance", icon: TrendingUp },
   { name: "Link Generator", href: "/links", icon: Link2 },
   { name: "Spend Tracking", href: "/spend", icon: DollarSign },
   { name: "Spark Codes", href: "/spark-codes", icon: Sparkles },
   { name: "Spark Analytics", href: "/spark-codes-analytics", icon: BarChart3 },
+  { name: "Engagement Boost", href: "/engagement", icon: Zap },
   { name: "Competitor Spy", href: "/competitors", icon: Eye },
 ];
 
