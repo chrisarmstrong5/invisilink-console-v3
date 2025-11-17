@@ -9,7 +9,7 @@ interface SparkCodeCompactCardProps {
 }
 
 export function SparkCodeCompactCard({ sparkCode, onClick }: SparkCodeCompactCardProps) {
-  const { name, platform, offerCode, mediaUrls, metrics } = sparkCode;
+  const { name, platform, offerCode, mediaUrls, metrics, contentType } = sparkCode;
   const cvr = metrics?.cvr || 0;
   const thumbnailUrl = mediaUrls?.[0] || "/placeholder-video.png";
 
@@ -18,12 +18,22 @@ export function SparkCodeCompactCard({ sparkCode, onClick }: SparkCodeCompactCar
       onClick={onClick}
       className="relative aspect-[3/4] group cursor-pointer overflow-hidden rounded-lg transition-transform hover:scale-105 hover:z-10"
     >
-      {/* Background Image */}
-      <img
-        src={thumbnailUrl}
-        alt={name}
-        className="absolute inset-0 w-full h-full object-cover"
-      />
+      {/* Background Media */}
+      {contentType === "video" ? (
+        <video
+          src={thumbnailUrl}
+          className="absolute inset-0 w-full h-full object-cover"
+          muted
+          playsInline
+          preload="metadata"
+        />
+      ) : (
+        <img
+          src={thumbnailUrl}
+          alt={name}
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+      )}
 
       {/* Gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />

@@ -17,7 +17,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { config, type SparkCode } from "@/lib/config";
-import { Upload, X, Video, Image as ImageIcon, TrendingUp, TrendingDown, BarChart3 } from "lucide-react";
+import { Upload, X, Video, Image as ImageIcon, TrendingUp, TrendingDown, BarChart3, Edit } from "lucide-react";
 import Link from "next/link";
 import { SparkCodeCompactCard } from "@/components/spark-code-compact-card";
 import { SparkCodeDetailDialog } from "@/components/spark-code-detail-dialog";
@@ -26,6 +26,7 @@ export default function SparkCodesPage() {
   const [sparkCodes, setSparkCodes] = useState<SparkCode[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedCard, setSelectedCard] = useState<SparkCode | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   // Form state
   const [contentType, setContentType] = useState<"video" | "slideshow">("video");
@@ -122,8 +123,8 @@ export default function SparkCodesPage() {
     return urls;
   };
 
-  // Add spark code
-  const handleAddSparkCode = async () => {
+  // Add or Update spark code
+  const handleSubmit = async () => {
     if (!sparkCodeId.trim()) {
       toast.error("Please enter a Spark Code ID");
       return;
@@ -132,24 +133,35 @@ export default function SparkCodesPage() {
       toast.error("Please select an offer");
       return;
     }
-    if (mediaFiles.length === 0) {
+
+    // Only require media files for new spark codes, not for edits
+    if (!editingId && mediaFiles.length === 0) {
       toast.error(`Please upload ${contentType === "video" ? "a video/screenshot" : "slideshow images"}`);
       return;
     }
 
     setLoading(true);
     try {
-      // Upload media files
-      const mediaUrls = await uploadFiles(mediaFiles);
+      let mediaUrls: string[] = [];
 
-      // Create new spark code
-      const newSparkCode: SparkCode = {
-        id: `SC${sparkCodes.length + 1}`,
+      // If updating and no new files, keep existing media URLs
+      if (editingId && mediaFiles.length === 0) {
+        const existingSpark = sparkCodes.find((sc) => sc.id === editingId);
+        mediaUrls = existingSpark?.mediaUrls || [];
+      } else if (mediaFiles.length > 0) {
+        mediaUrls = await uploadFiles(mediaFiles);
+      }
+
+      // Create or update spark code
+      const sparkCodeData: SparkCode = {
+        id: editingId || `SC${sparkCodes.length + 1}`,
         name: sparkCodeId.trim(),
         sparkCode: sparkCodeId.trim(),
         offerCode: offer,
         platform,
-        createdDate: new Date().toISOString(),
+        createdDate: editingId
+          ? sparkCodes.find((sc) => sc.id === editingId)?.createdDate || new Date().toISOString()
+          : new Date().toISOString(),
         contentType,
         mediaUrls,
         tags: tags.split(",").map((t) => t.trim()).filter(Boolean),
@@ -160,38 +172,36 @@ export default function SparkCodesPage() {
           likes: engagementLikes,
           saves: engagementSaves,
         },
-        metrics: {
-          clicks: 0,
-          conversions: 0,
-          cvr: 0,
-          revenue: 0,
-          spend: 0,
-          roi: 0,
-        },
+        metrics: editingId
+          ? sparkCodes.find((sc) => sc.id === editingId)?.metrics || {
+              clicks: 0,
+              conversions: 0,
+              cvr: 0,
+              revenue: 0,
+              spend: 0,
+              roi: 0,
+            }
+          : {
+              clicks: 0,
+              conversions: 0,
+              cvr: 0,
+              revenue: 0,
+              spend: 0,
+              roi: 0,
+            },
       };
 
-      const saved = await saveSparkCode(newSparkCode);
+      const saved = await saveSparkCode(sparkCodeData);
 
       if (saved) {
-        // Reset form
-        setSparkCodeId("");
-        setOffer("");
-        setTags("");
-        setTiktokLink("");
-        setInstagramPostLink("");
-        setFacebookPostLink("");
-        setEngagementLikes(1900);
-        setEngagementSaves(180);
-        setMediaFiles([]);
-        setContentType("video");
-
-        toast.success("Spark code added successfully!");
+        handleCancelEdit();
+        toast.success(editingId ? "Spark code updated!" : "Spark code added successfully!");
       } else {
         toast.error("Failed to save spark code to database");
       }
     } catch (error) {
       console.error(error);
-      toast.error("Failed to add spark code");
+      toast.error(`Failed to ${editingId ? "update" : "add"} spark code`);
     }
     setLoading(false);
   };
@@ -215,6 +225,42 @@ export default function SparkCodesPage() {
     }
   };
 
+  // Edit spark code - populate form with existing data
+  const handleEdit = (sparkCode: SparkCode) => {
+    setEditingId(sparkCode.id);
+    setSparkCodeId(sparkCode.sparkCode);
+    setOffer(sparkCode.offerCode);
+    setPlatform(sparkCode.platform);
+    setContentType(sparkCode.contentType || "video");
+    setTags(sparkCode.tags?.join(", ") || "");
+    setTiktokLink(sparkCode.tiktokLink || "");
+    setInstagramPostLink(sparkCode.instagramPostLink || "");
+    setFacebookPostLink(sparkCode.facebookPostLink || "");
+    setEngagementLikes(sparkCode.engagementSettings?.likes || 1900);
+    setEngagementSaves(sparkCode.engagementSettings?.saves || 180);
+    // Note: existing media URLs can't be re-uploaded, user will need to re-upload if they want to change media
+    setMediaFiles([]);
+    // Scroll to top of form
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    toast.info("Editing spark code - update fields and click 'Update'");
+  };
+
+  // Cancel editing
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setSparkCodeId("");
+    setOffer("");
+    setPlatform("tiktok");
+    setContentType("video");
+    setTags("");
+    setTiktokLink("");
+    setInstagramPostLink("");
+    setFacebookPostLink("");
+    setEngagementLikes(1900);
+    setEngagementSaves(180);
+    setMediaFiles([]);
+  };
+
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
       {/* Header */}
@@ -235,7 +281,9 @@ export default function SparkCodesPage() {
 
       {/* Upload Form */}
       <Card className="mb-6 md:mb-8 p-4 md:p-6 shadow-sm">
-        <h3 className="mb-4 md:mb-6 text-lg font-semibold text-foreground">Add New Spark Code</h3>
+        <h3 className="mb-4 md:mb-6 text-lg font-semibold text-foreground">
+          {editingId ? "Edit Spark Code" : "Add New Spark Code"}
+        </h3>
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           {/* Content Type */}
@@ -454,9 +502,16 @@ export default function SparkCodesPage() {
           </div>
         </div>
 
-        <Button onClick={handleAddSparkCode} disabled={loading} className="mt-6 w-full bg-primary hover:bg-primary/90">
-          {loading ? "Uploading..." : "Add Spark Code"}
-        </Button>
+        <div className="mt-6 flex gap-3">
+          <Button onClick={handleSubmit} disabled={loading} className="flex-1 bg-primary hover:bg-primary/90">
+            {loading ? "Uploading..." : editingId ? "Update Spark Code" : "Add Spark Code"}
+          </Button>
+          {editingId && (
+            <Button onClick={handleCancelEdit} variant="outline" className="flex-1">
+              Cancel
+            </Button>
+          )}
+        </div>
       </Card>
 
       {/* Spark Codes Grid */}
@@ -485,6 +540,7 @@ export default function SparkCodesPage() {
               open={selectedCard !== null}
               onClose={() => setSelectedCard(null)}
               onDelete={handleDelete}
+              onEdit={handleEdit}
               onEngagementBoost={async (sc) => {
                 try {
                   const response = await fetch("/api/smm/boost", {

@@ -18,12 +18,13 @@ import { Badge } from "@/components/ui/badge";
 import { MobileUpload } from "@/components/mobile/mobile-upload";
 import { toast } from "sonner";
 import type { CompetitorAd } from "@/lib/config";
-import { Upload, X, Video, Image as ImageIcon, Search } from "lucide-react";
+import { Upload, X, Video, Image as ImageIcon, Search, Edit } from "lucide-react";
 
 export default function CompetitorsPage() {
   const [competitors, setCompetitors] = useState<CompetitorAd[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   // Form state
   const [contentType, setContentType] = useState<"video" | "slideshow">("video");
@@ -133,8 +134,8 @@ export default function CompetitorsPage() {
     return urls;
   };
 
-  // Add competitor ad
-  const handleAddAd = async () => {
+  // Add or Update competitor ad
+  const handleSubmit = async () => {
     if (!competitor.trim()) {
       toast.error("Please enter competitor name");
       return;
@@ -143,14 +144,24 @@ export default function CompetitorsPage() {
       toast.error("Please enter niche/offer");
       return;
     }
-    if (mediaFiles.length === 0) {
+
+    // Only require media files for new ads, not for edits
+    if (!editingId && mediaFiles.length === 0) {
       toast.error(`Please upload ${contentType === "video" ? "a video/screenshot" : "slideshow images"}`);
       return;
     }
 
     setLoading(true);
     try {
-      const mediaUrls = await uploadFiles(mediaFiles);
+      let mediaUrls: string[] = [];
+
+      // If updating and no new files, keep existing media URLs
+      if (editingId && mediaFiles.length === 0) {
+        const existingAd = competitors.find((ad) => ad.id === editingId);
+        mediaUrls = existingAd?.mediaUrls || [];
+      } else if (mediaFiles.length > 0) {
+        mediaUrls = await uploadFiles(mediaFiles);
+      }
 
       // Upload lander screenshot if provided
       let landerScreenshotUrl: string | undefined;
@@ -159,8 +170,8 @@ export default function CompetitorsPage() {
         landerScreenshotUrl = landerUrls[0];
       }
 
-      const newAd = {
-        id: `COMP${competitors.length + 1}`,
+      const adData = {
+        id: editingId || `COMP${Date.now()}`,
         creatorName: competitor.trim(),
         platform: "tiktok",
         contentType,
@@ -172,26 +183,18 @@ export default function CompetitorsPage() {
         tags: tags.split(",").map((t) => t.trim()).filter(Boolean),
       };
 
-      const saved = await saveCompetitor(newAd);
+      const saved = await saveCompetitor(adData);
 
       if (saved) {
         // Reset form
-        setCompetitor("");
-        setNiche("");
-        setTags("");
-        setNotes("");
-        setTiktokLink("");
-        setMediaFiles([]);
-        setLanderScreenshot(null);
-        setContentType("video");
-
-        toast.success("Competitor ad added successfully!");
+        handleCancelEdit();
+        toast.success(editingId ? "Competitor ad updated!" : "Competitor ad added!");
       } else {
         toast.error("Failed to save competitor ad to database");
       }
     } catch (error) {
       console.error(error);
-      toast.error("Failed to add competitor ad");
+      toast.error(`Failed to ${editingId ? "update" : "add"} competitor ad`);
     }
     setLoading(false);
   };
@@ -213,6 +216,36 @@ export default function CompetitorsPage() {
       console.error("Failed to delete competitor ad:", error);
       toast.error("Failed to delete competitor ad");
     }
+  };
+
+  // Edit ad - populate form with existing data
+  const handleEdit = (ad: CompetitorAd) => {
+    setEditingId(ad.id);
+    setCompetitor(ad.creatorName);
+    setNiche(ad.productName || "");
+    setTags(ad.tags?.join(", ") || "");
+    setNotes(ad.adContent || "");
+    setTiktokLink(ad.productLink || "");
+    setContentType(ad.contentType);
+    // Note: existing media URLs can't be re-uploaded, user will need to re-upload if they want to change media
+    setMediaFiles([]);
+    setLanderScreenshot(null);
+    // Scroll to top of form
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    toast.info("Editing competitor ad - update fields and click 'Update'");
+  };
+
+  // Cancel editing
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setCompetitor("");
+    setNiche("");
+    setTags("");
+    setNotes("");
+    setTiktokLink("");
+    setMediaFiles([]);
+    setLanderScreenshot(null);
+    setContentType("video");
   };
 
   // Filter ads
@@ -238,7 +271,9 @@ export default function CompetitorsPage() {
 
       {/* Upload Form */}
       <Card className="mb-6 md:mb-8 p-4 md:p-6 shadow-sm">
-        <h3 className="mb-6 text-lg font-semibold text-foreground">Add Competitor Ad</h3>
+        <h3 className="mb-6 text-lg font-semibold text-foreground">
+          {editingId ? "Edit Competitor Ad" : "Add Competitor Ad"}
+        </h3>
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           {/* Content Type */}
@@ -448,9 +483,16 @@ export default function CompetitorsPage() {
           </div>
         </div>
 
-        <Button onClick={handleAddAd} disabled={loading} className="mt-6 w-full bg-primary hover:bg-primary/90">
-          {loading ? "Uploading..." : "Add Competitor Ad"}
-        </Button>
+        <div className="mt-6 flex gap-3">
+          <Button onClick={handleSubmit} disabled={loading} className="flex-1 bg-primary hover:bg-primary/90">
+            {loading ? "Uploading..." : editingId ? "Update Competitor Ad" : "Add Competitor Ad"}
+          </Button>
+          {editingId && (
+            <Button onClick={handleCancelEdit} variant="outline" className="flex-1">
+              Cancel
+            </Button>
+          )}
+        </div>
       </Card>
 
       {/* Search */}
@@ -486,11 +528,21 @@ export default function CompetitorsPage() {
                 {/* Media Preview */}
                 <div className="relative aspect-video bg-secondary">
                   {ad.mediaUrls && ad.mediaUrls.length > 0 && ad.mediaUrls[0] && (
-                    <img
-                      src={ad.mediaUrls[0]}
-                      alt={ad.creatorName}
-                      className="h-full w-full object-cover"
-                    />
+                    ad.contentType === "video" ? (
+                      <video
+                        src={ad.mediaUrls[0]}
+                        className="h-full w-full object-cover"
+                        controls
+                        playsInline
+                        preload="metadata"
+                      />
+                    ) : (
+                      <img
+                        src={ad.mediaUrls[0]}
+                        alt={ad.creatorName}
+                        className="h-full w-full object-cover"
+                      />
+                    )
                   )}
                   <div className="absolute right-2 top-2">
                     <Badge className="bg-primary text-xs">{ad.contentType}</Badge>
@@ -513,14 +565,24 @@ export default function CompetitorsPage() {
                         <p className="text-xs text-muted-foreground">{ad.productName}</p>
                       )}
                     </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleDelete(ad.id)}
-                      className="h-7 px-2 text-red-600 hover:bg-red-50 hover:text-red-700"
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
+                    <div className="flex gap-1">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleEdit(ad)}
+                        className="h-7 px-2"
+                      >
+                        <Edit className="h-3 w-3" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDelete(ad.id)}
+                        className="h-7 px-2 text-red-600 hover:bg-red-50 hover:text-red-700"
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </div>
                   </div>
 
                   {/* Tags */}

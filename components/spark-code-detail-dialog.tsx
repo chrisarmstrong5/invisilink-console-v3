@@ -19,6 +19,7 @@ import {
   Copy,
   ChevronLeft,
   ChevronRight,
+  Edit,
 } from "lucide-react";
 import type { SparkCode } from "@/lib/config";
 
@@ -27,6 +28,7 @@ interface SparkCodeDetailDialogProps {
   open: boolean;
   onClose: () => void;
   onDelete: (id: string) => void;
+  onEdit?: (sparkCode: SparkCode) => void;
   onEngagementBoost?: (sparkCode: SparkCode) => void;
 }
 
@@ -35,6 +37,7 @@ export function SparkCodeDetailDialog({
   open,
   onClose,
   onDelete,
+  onEdit,
   onEngagementBoost,
 }: SparkCodeDetailDialogProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -84,11 +87,21 @@ export function SparkCodeDetailDialog({
           <div className="relative bg-black min-h-[300px] md:min-h-[600px]">
             {mediaUrls.length > 0 && (
               <>
-                <img
-                  src={mediaUrls[currentImageIndex]}
-                  alt={name}
-                  className="object-contain w-full h-full"
-                />
+                {contentType === "video" ? (
+                  <video
+                    src={mediaUrls[currentImageIndex]}
+                    className="object-contain w-full h-full"
+                    controls
+                    playsInline
+                    preload="metadata"
+                  />
+                ) : (
+                  <img
+                    src={mediaUrls[currentImageIndex]}
+                    alt={name}
+                    className="object-contain w-full h-full"
+                  />
+                )}
 
                 {/* Carousel controls for slideshow */}
                 {contentType === "slideshow" && mediaUrls.length > 1 && (
@@ -146,14 +159,28 @@ export function SparkCodeDetailDialog({
                     )}
                   </div>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleDelete}
-                  className="text-destructive hover:text-destructive"
-                >
-                  <X className="h-5 w-5" />
-                </Button>
+                <div className="flex gap-1">
+                  {onEdit && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => {
+                        onEdit(sparkCode);
+                        onClose();
+                      }}
+                    >
+                      <Edit className="h-5 w-5" />
+                    </Button>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleDelete}
+                    className="text-destructive hover:text-destructive"
+                  >
+                    <X className="h-5 w-5" />
+                  </Button>
+                </div>
               </div>
             </DialogHeader>
 
