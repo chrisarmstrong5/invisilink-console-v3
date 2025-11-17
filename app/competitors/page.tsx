@@ -158,17 +158,17 @@ export default function CompetitorsPage() {
         landerScreenshotUrl = landerUrls[0];
       }
 
-      const newAd: CompetitorAd = {
+      const newAd = {
         id: `COMP${competitors.length + 1}`,
+        creatorName: competitor.trim(),
+        platform: "tiktok",
         contentType,
         mediaUrls,
-        landerScreenshotUrl,
-        competitor: competitor.trim(),
-        niche: niche.trim(),
+        adContent: notes.trim(),
+        productName: niche.trim(),
+        productLink: tiktokLink.trim() || undefined,
+        capturedDate: new Date(),
         tags: tags.split(",").map((t) => t.trim()).filter(Boolean),
-        notes: notes.trim(),
-        tiktokLink: tiktokLink.trim() || undefined,
-        createdDate: new Date().toISOString(),
       };
 
       const saved = await saveCompetitor(newAd);
