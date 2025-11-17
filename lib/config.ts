@@ -299,15 +299,17 @@ export type SparkCode = {
 
 export type CompetitorAd = {
   id: string;
+  creatorName: string;
+  platform: string;
   contentType: "video" | "slideshow";
   mediaUrls: string[];
-  landerScreenshotUrl?: string;
-  competitor: string;
-  niche: string;
-  tags: string[];
-  notes: string;
-  tiktokLink?: string;
-  createdDate: string;
+  adContent?: string;
+  sparkCode?: string;
+  productName?: string;
+  productLink?: string;
+  capturedDate: Date;
+  tags?: string[];
+  createdAt?: Date;
 };
 
 export type LinkHistoryItem = {
