@@ -76,23 +76,24 @@ export default function CompetitorsPage() {
     }
   };
 
-  // Dropzone for ad media
+  // Dropzone for ad media - allow up to 50 files for comprehensive competitor research
   const onDrop = useCallback((acceptedFiles: File[]) => {
-    const maxFiles = contentType === "video" ? 1 : 20;
+    const maxFiles = 50; // Allow many screenshots for thorough competitor analysis
     if (acceptedFiles.length + mediaFiles.length > maxFiles) {
-      toast.error(`Maximum ${maxFiles} file${maxFiles > 1 ? "s" : ""} for ${contentType}`);
+      toast.error(`Maximum ${maxFiles} files allowed`);
       return;
     }
     setMediaFiles([...mediaFiles, ...acceptedFiles].slice(0, maxFiles));
-  }, [contentType, mediaFiles]);
+  }, [mediaFiles]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
-      "image/*": [".png", ".jpg", ".jpeg", ".gif"],
-      "video/*": [".mp4", ".mov", ".avi"],
+      "image/*": [".png", ".jpg", ".jpeg", ".gif", ".webp"],
+      "video/*": [".mp4", ".mov", ".avi", ".webm"],
     },
-    maxFiles: contentType === "video" ? 1 : 20,
+    maxFiles: 50,
+    multiple: true,
   });
 
   // Separate dropzone for lander screenshot
@@ -484,7 +485,7 @@ export default function CompetitorsPage() {
               <Card key={ad.id} className="overflow-hidden shadow-sm">
                 {/* Media Preview */}
                 <div className="relative aspect-video bg-secondary">
-                  {ad.mediaUrls[0] && (
+                  {ad.mediaUrls && ad.mediaUrls.length > 0 && ad.mediaUrls[0] && (
                     <img
                       src={ad.mediaUrls[0]}
                       alt={ad.creatorName}
@@ -494,6 +495,13 @@ export default function CompetitorsPage() {
                   <div className="absolute right-2 top-2">
                     <Badge className="bg-primary text-xs">{ad.contentType}</Badge>
                   </div>
+                  {ad.mediaUrls && ad.mediaUrls.length > 1 && (
+                    <div className="absolute bottom-2 right-2">
+                      <Badge variant="secondary" className="text-xs">
+                        +{ad.mediaUrls.length - 1} more
+                      </Badge>
+                    </div>
+                  )}
                 </div>
 
                 {/* Info */}
@@ -501,7 +509,9 @@ export default function CompetitorsPage() {
                   <div className="mb-3 flex items-start justify-between">
                     <div className="flex-1">
                       <p className="mb-1 text-sm font-semibold text-foreground">{ad.creatorName}</p>
-                      <p className="text-xs text-muted-foreground">{ad.productName}</p>
+                      {ad.productName && (
+                        <p className="text-xs text-muted-foreground">{ad.productName}</p>
+                      )}
                     </div>
                     <Button
                       variant="outline"
