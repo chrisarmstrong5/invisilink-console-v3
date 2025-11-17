@@ -31,8 +31,7 @@ export async function POST(request: NextRequest) {
 
     // Handle single ad creation
     const ad = await competitorAdsRepository.create(body);
-    const camelCasedData = objectToCamelCase(ad);
-    return NextResponse.json({ success: true, data: camelCasedData });
+    return NextResponse.json({ success: true, data: ad });
   } catch (error) {
     console.error("Failed to create competitor ad:", error);
     return NextResponse.json(
