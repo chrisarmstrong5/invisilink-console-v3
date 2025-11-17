@@ -135,12 +135,6 @@ export default function SparkCodesPage() {
       return;
     }
 
-    // Only require media files for new spark codes, not for edits
-    if (!editingId && mediaFiles.length === 0) {
-      toast.error(`Please upload ${contentType === "video" ? "a video/screenshot" : "slideshow images"}`);
-      return;
-    }
-
     setLoading(true);
     try {
       let mediaUrls: string[] = [];
@@ -152,6 +146,7 @@ export default function SparkCodesPage() {
       } else if (mediaFiles.length > 0) {
         mediaUrls = await uploadFiles(mediaFiles);
       }
+      // Media upload is optional - allow empty mediaUrls array
 
       // Create or update spark code
       const sparkCodeData: SparkCode = {
