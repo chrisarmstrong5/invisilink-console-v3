@@ -231,7 +231,7 @@ export const config = {
     // Primary provider
     provider: "smmfollows" as "smmfollows" | "jap",
     smmfollows: {
-      apiUrl: "https://smmfollows.com/api",
+      apiUrl: "https://smmfollows.com/api/v2",
       apiKey: "17a96f7102a90f6f7c6c82d9c6f6676c",
       services: {
         tiktok: {

@@ -218,10 +218,10 @@ export default function CompetitorsPage() {
   const filteredAds = competitors.filter((ad) => {
     const search = searchTerm.toLowerCase();
     return (
-      ad.competitor.toLowerCase().includes(search) ||
-      ad.niche.toLowerCase().includes(search) ||
-      ad.tags.some((tag) => tag.toLowerCase().includes(search)) ||
-      ad.notes.toLowerCase().includes(search)
+      ad.creatorName.toLowerCase().includes(search) ||
+      (ad.productName && ad.productName.toLowerCase().includes(search)) ||
+      (ad.tags && ad.tags.some((tag) => tag.toLowerCase().includes(search))) ||
+      (ad.adContent && ad.adContent.toLowerCase().includes(search))
     );
   });
 
@@ -487,7 +487,7 @@ export default function CompetitorsPage() {
                   {ad.mediaUrls[0] && (
                     <img
                       src={ad.mediaUrls[0]}
-                      alt={ad.competitor}
+                      alt={ad.creatorName}
                       className="h-full w-full object-cover"
                     />
                   )}
@@ -500,8 +500,8 @@ export default function CompetitorsPage() {
                 <div className="p-4">
                   <div className="mb-3 flex items-start justify-between">
                     <div className="flex-1">
-                      <p className="mb-1 text-sm font-semibold text-foreground">{ad.competitor}</p>
-                      <p className="text-xs text-muted-foreground">{ad.niche}</p>
+                      <p className="mb-1 text-sm font-semibold text-foreground">{ad.creatorName}</p>
+                      <p className="text-xs text-muted-foreground">{ad.productName}</p>
                     </div>
                     <Button
                       variant="outline"
@@ -514,7 +514,7 @@ export default function CompetitorsPage() {
                   </div>
 
                   {/* Tags */}
-                  {ad.tags.length > 0 && (
+                  {ad.tags && ad.tags.length > 0 && (
                     <div className="mb-3 flex flex-wrap gap-1">
                       {ad.tags.map((tag, idx) => (
                         <Badge key={idx} variant="secondary" className="text-xs">
@@ -525,10 +525,10 @@ export default function CompetitorsPage() {
                   )}
 
                   {/* TikTok Link */}
-                  {ad.tiktokLink && (
+                  {ad.productLink && (
                     <div className="mb-3">
                       <a
-                        href={ad.tiktokLink}
+                        href={ad.productLink}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-xs text-primary hover:underline flex items-center gap-1"
@@ -539,10 +539,10 @@ export default function CompetitorsPage() {
                   )}
 
                   {/* Notes */}
-                  {ad.notes && (
+                  {ad.adContent && (
                     <div className="border-t pt-3">
                       <p className="text-xs text-muted-foreground">Notes:</p>
-                      <p className="mt-1 text-sm text-foreground">{ad.notes}</p>
+                      <p className="mt-1 text-sm text-foreground">{ad.adContent}</p>
                     </div>
                   )}
                 </div>
