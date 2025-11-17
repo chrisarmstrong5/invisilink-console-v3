@@ -231,13 +231,13 @@ export const config = {
     // Primary provider
     provider: "smmfollows" as "smmfollows" | "jap",
     smmfollows: {
-      apiUrl: "https://smmfollows.com/api/v2",
-      apiKey: process.env.SMMFOLLOWS_API_KEY || "",
+      apiUrl: "https://smmfollows.com/api",
+      apiKey: "17a96f7102a90f6f7c6c82d9c6f6676c",
       services: {
         tiktok: {
-          likes: "", // Service ID for TikTok likes (get from panel)
-          saves: "", // Service ID for TikTok saves (get from panel)
-          views: "", // Service ID for TikTok views (get from panel)
+          likes: "9620", // Service ID for TikTok likes
+          saves: "6037", // Service ID for TikTok saves
+          views: "", // Service ID for TikTok views (not provided)
         },
       },
     },
