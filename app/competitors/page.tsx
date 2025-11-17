@@ -408,19 +408,20 @@ export default function CompetitorsPage() {
           {/* Mobile Upload */}
           <div className="md:hidden">
             <MobileUpload
-              accept={contentType === "video" ? "image/*,video/*" : "image/*"}
-              multiple={contentType === "slideshow"}
+              accept="image/*,video/*"
+              multiple={true}
               maxSize={50 * 1024 * 1024}
               onUpload={async (files) => {
-                const maxFiles = contentType === "video" ? 1 : 3;
-                if (files.length > maxFiles) {
-                  toast.error(`Maximum ${maxFiles} file${maxFiles > 1 ? "s" : ""} for ${contentType}`);
+                const maxFiles = 50;
+                const currentTotal = mediaFiles.length + files.length;
+                if (currentTotal > maxFiles) {
+                  toast.error(`Maximum ${maxFiles} files allowed (you have ${mediaFiles.length}, trying to add ${files.length})`);
                   return;
                 }
-                setMediaFiles(files);
-                toast.success(`${files.length} file(s) selected`);
+                setMediaFiles([...mediaFiles, ...files]);
+                toast.success(`${files.length} file(s) added (${currentTotal} total)`);
               }}
-              label={contentType === "video" ? "Upload Video/Screenshot" : "Upload 3 Slides"}
+              label="Upload Media (up to 50 files)"
             />
           </div>
         </div>
@@ -535,6 +536,8 @@ export default function CompetitorsPage() {
                         controls
                         playsInline
                         preload="metadata"
+                        webkit-playsinline="true"
+                        controlsList="nodownload"
                       />
                     ) : (
                       <img
@@ -544,11 +547,11 @@ export default function CompetitorsPage() {
                       />
                     )
                   )}
-                  <div className="absolute right-2 top-2">
+                  <div className="absolute right-2 top-2 pointer-events-none">
                     <Badge className="bg-primary text-xs">{ad.contentType}</Badge>
                   </div>
                   {ad.mediaUrls && ad.mediaUrls.length > 1 && (
-                    <div className="absolute bottom-2 right-2">
+                    <div className="absolute bottom-2 right-2 pointer-events-none">
                       <Badge variant="secondary" className="text-xs">
                         +{ad.mediaUrls.length - 1} more
                       </Badge>
