@@ -35,13 +35,15 @@ export function MobileUpload({
       return;
     }
 
-    setSelectedFiles(files);
+    // Append to existing files instead of replacing
+    const newFiles = [...selectedFiles, ...files];
+    setSelectedFiles(newFiles);
 
-    // Immediately call onUpload to update parent component
-    if (files.length > 0) {
+    // Immediately call onUpload to update parent component with all files
+    if (newFiles.length > 0) {
       setUploading(true);
       try {
-        await onUpload(files);
+        await onUpload(newFiles);
       } catch (error) {
         console.error("Upload error:", error);
       } finally {
@@ -131,9 +133,9 @@ export function MobileUpload({
             onClick={() => fileInputRef.current?.click()}
             variant="outline"
             className="w-full h-12"
-            disabled={uploading || !multiple}
+            disabled={uploading}
           >
-            {multiple ? "Add More" : "Change File"}
+            Add More Files
           </Button>
         </>
       )}

@@ -413,13 +413,12 @@ export default function CompetitorsPage() {
               maxSize={50 * 1024 * 1024}
               onUpload={async (files) => {
                 const maxFiles = 50;
-                const currentTotal = mediaFiles.length + files.length;
-                if (currentTotal > maxFiles) {
-                  toast.error(`Maximum ${maxFiles} files allowed (you have ${mediaFiles.length}, trying to add ${files.length})`);
+                if (files.length > maxFiles) {
+                  toast.error(`Maximum ${maxFiles} files allowed`);
                   return;
                 }
-                setMediaFiles([...mediaFiles, ...files]);
-                toast.success(`${files.length} file(s) added (${currentTotal} total)`);
+                setMediaFiles(files);
+                toast.success(`${files.length} file(s) selected`);
               }}
               label="Upload Media (up to 50 files)"
             />

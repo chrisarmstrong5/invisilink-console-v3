@@ -82,23 +82,24 @@ export default function SparkCodesPage() {
     }
   };
 
-  // Dropzone for media upload
+  // Dropzone for media upload - allow up to 50 files
   const onDrop = useCallback((acceptedFiles: File[]) => {
-    const maxFiles = contentType === "video" ? 1 : 20;
+    const maxFiles = 50;
     if (acceptedFiles.length + mediaFiles.length > maxFiles) {
-      toast.error(`Maximum ${maxFiles} file${maxFiles > 1 ? "s" : ""} for ${contentType}`);
+      toast.error(`Maximum ${maxFiles} files allowed`);
       return;
     }
     setMediaFiles([...mediaFiles, ...acceptedFiles].slice(0, maxFiles));
-  }, [contentType, mediaFiles]);
+  }, [mediaFiles]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
-      "image/*": [".png", ".jpg", ".jpeg", ".gif"],
-      "video/*": [".mp4", ".mov", ".avi"],
+      "image/*": [".png", ".jpg", ".jpeg", ".gif", ".webp"],
+      "video/*": [".mp4", ".mov", ".avi", ".webm"],
     },
-    maxFiles: contentType === "video" ? 1 : 20,
+    maxFiles: 50,
+    multiple: true,
   });
 
   // Upload files to Vercel Blob
@@ -485,19 +486,19 @@ export default function SparkCodesPage() {
           {/* Mobile Upload */}
           <div className="md:hidden">
             <MobileUpload
-              accept={contentType === "video" ? "image/*,video/*" : "image/*"}
-              multiple={contentType === "slideshow"}
+              accept="image/*,video/*"
+              multiple={true}
               maxSize={50 * 1024 * 1024}
               onUpload={async (files) => {
-                const maxFiles = contentType === "video" ? 1 : 20;
+                const maxFiles = 50;
                 if (files.length > maxFiles) {
-                  toast.error(`Maximum ${maxFiles} file(s) for ${contentType}`);
+                  toast.error(`Maximum ${maxFiles} files allowed`);
                   return;
                 }
                 setMediaFiles(files);
                 toast.success(`${files.length} file(s) selected`);
               }}
-              label={contentType === "video" ? "Upload Video/Screenshot" : "Upload Slides"}
+              label="Upload Media (up to 50 files)"
             />
           </div>
         </div>
