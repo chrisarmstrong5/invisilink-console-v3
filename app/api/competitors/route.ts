@@ -22,8 +22,7 @@ export async function POST(request: NextRequest) {
 
     // Handle bulk import
     if (body.bulk && Array.isArray(body.ads)) {
-      const snakeCasedAds = body.ads.map((ad: any) => objectToSnakeCase(ad));
-      await competitorAdsRepository.bulkInsert(snakeCasedAds);
+      await competitorAdsRepository.bulkInsert(body.ads);
       return NextResponse.json({
         success: true,
         message: `Imported ${body.ads.length} competitor ads`
@@ -31,8 +30,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Handle single ad creation
-    const snakeCasedBody = objectToSnakeCase(body) as any;
-    const ad = await competitorAdsRepository.create(snakeCasedBody);
+    const ad = await competitorAdsRepository.create(body);
     const camelCasedData = objectToCamelCase(ad);
     return NextResponse.json({ success: true, data: camelCasedData });
   } catch (error) {
