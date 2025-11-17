@@ -50,9 +50,9 @@ function isValidSlugPattern(pathname: string): boolean {
   // Remove leading slash
   const slug = pathname.slice(1);
 
-  // Slug pattern: alphanumeric + hyphens, 10-50 chars
+  // Slug pattern: alphanumeric (upper and lowercase) + hyphens + underscores, 10-50 chars
   // Format: offer-account-timestamp
-  const slugRegex = /^[a-z0-9-]{10,50}$/;
+  const slugRegex = /^[a-zA-Z0-9_-]{10,50}$/;
 
   return slugRegex.test(slug);
 }
